@@ -1,7 +1,7 @@
 module Main where
 
 import Lib
-import Albert
+import TestGrammar
 
 main :: IO ()
-main = putStrLn dupa
+main = main2
