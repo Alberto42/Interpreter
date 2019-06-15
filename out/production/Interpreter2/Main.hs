@@ -8,13 +8,14 @@ import System.IO( IOMode( ReadMode ) )
 import ErrM( Err( Bad, Ok ) )
 import ParGrammar (myLexer, pProgram)
 import PrintGrammar (printTree)
+import InterpreterMonad
 
 parseAndExecute :: String -> IO ()
 parseAndExecute s =
   let result = pProgram (myLexer s)
   in case result of
     Bad s -> putStrLn "Parsing failed! :("
-    Ok tree -> putStrLn $ printTree tree
+    Ok tree -> putStrLn $ show tree
 
 main :: IO ()
 main = do
