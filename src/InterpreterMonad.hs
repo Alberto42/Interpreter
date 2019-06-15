@@ -1,9 +1,10 @@
 module InterpreterMonad where
 
 import AbsGrammar (Ident)
+import qualified Data.Map             as Map
 
-data Value = VInt Integer deriving (Show)
-type State = [(Ident, Value)]
+data Value = VInt Integer | Null deriving (Show)
+type State = Map.Map Ident Value
 
 type InterpreterMonadInternal a = State -> Either String (a,State)
 newtype InterpreterMonad a = InterpreterMonad { runInterpreter :: InterpreterMonadInternal a}

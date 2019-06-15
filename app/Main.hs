@@ -11,9 +11,10 @@ import PrintGrammar (printTree)
 import InterpreterMonad
 import SkelGrammar
 import InterpreterMonad (State)
+import qualified Data.Map             as Map
 
 handleOutput :: InterpreterMonad Value-> IO ()
-handleOutput (InterpreterMonad f) = putStrLn $ show $ f []
+handleOutput (InterpreterMonad f) = putStrLn $ show $ f Map.empty
 
 parseAndExecute :: String -> IO ()
 parseAndExecute s =
