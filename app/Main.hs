@@ -9,13 +9,18 @@ import ErrM( Err( Bad, Ok ) )
 import ParGrammar (myLexer, pProgram)
 import PrintGrammar (printTree)
 import InterpreterMonad
+import SkelGrammar
+import InterpreterMonad (State)
+
+handleOutput :: InterpreterMonad Value-> IO ()
+handleOutput (InterpreterMonad f) = putStrLn $ show $ f []
 
 parseAndExecute :: String -> IO ()
 parseAndExecute s =
   let result = pProgram (myLexer s)
   in case result of
     Bad s -> putStrLn "Parsing failed! :("
-    Ok tree -> putStrLn $ show tree
+    Ok tree -> handleOutput $ transProgram tree
 
 main :: IO ()
 main = do

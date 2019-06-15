@@ -4,6 +4,7 @@ module SkelGrammar where
 
 import AbsGrammar
 import ErrM
+import InterpreterMonad
 type Result = Err String
 
 failure :: Show a => a -> Result
@@ -12,9 +13,9 @@ failure x = Bad $ "Undefined case: " ++ show x
 transIdent :: Ident -> Result
 transIdent x = case x of
   Ident string -> failure x
-transProgram :: Program -> Result
+transProgram :: Program -> InterpreterMonad Value
 transProgram x = case x of
-  SProgram stmts -> failure x
+  SProgram stmts -> returnError "error"
 transStmts :: Stmts -> Result
 transStmts x = case x of
   StmtsNull -> failure x
