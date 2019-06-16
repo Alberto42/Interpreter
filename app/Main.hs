@@ -21,7 +21,9 @@ parseAndExecute s =
   let result = pProgram (myLexer s)
   in case result of
     Bad s -> putStrLn "Parsing failed! :("
-    Ok tree -> handleOutput $ transProgram tree
+    Ok tree -> do
+      putStrLn $ show tree
+      handleOutput $ transProgram tree
 
 main :: IO ()
 main = do
