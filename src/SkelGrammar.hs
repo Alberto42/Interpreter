@@ -26,17 +26,17 @@ transStmt x = case x of
     InterpreterMonad $ \s -> Right (Null, Map.insert ident val s)
 
   ConstAssign ident exp -> returnError "not yet implemented"
-  If boolexp bracedstmts -> returnError "not yet implemented"
-  IfElse boolexp bracedstmts1 bracedstmts2 -> returnError "not yet implemented"
-  For ident intexp1 intexp2 bracedstmts -> returnError "not yet implemented"
-  While boolexp bracedstmts -> returnError "not yet implemented"
+  If exp bracedstmts -> returnError "not yet implemented"
+  IfElse exp bracedstmts1 bracedstmts2 -> returnError "not yet implemented"
+  For ident exp1 exp2 bracedstmts -> returnError "not yet implemented"
+  While exp bracedstmts -> returnError "not yet implemented"
   Break -> returnError "not yet implemented"
   Continue -> returnError "not yet implemented"
   FuncCall ident exp -> returnError "not yet implemented"
   FuncDecl ident1 ident2 bracedstmts -> returnError "not yet implemented"
   Return exp -> returnError "not yet implemented"
   Print parident -> returnError "not yet implemented"
-  AssignListElem ident intexp exp -> returnError "not yet implemented"
+  AssignListElem ident exp1 exp2 -> returnError "not yet implemented"
   GetListSize list -> returnError "not yet implemented"
   AppendListElem ident exp -> returnError "not yet implemented"
   AssignTuple ident tuple -> returnError "not yet implemented"
@@ -59,45 +59,27 @@ transBoolean x = case x of
   BoolFalse -> returnError "not yet implemented"
 transExp :: Exp -> InterpreterMonad Value
 transExp x = case x of
-  ExpInt intexp -> transIntExp intexp
-  ExpString stringexp -> transStringExp stringexp
-  ExpBool boolexp -> transBoolExp boolexp
   ExpList list -> returnError "not yet implemented"
   ExpTuple tuple -> returnError "not yet implemented"
-  GetListElem ident intexp -> returnError "not yet implemented"
-transIntExp :: IntExp -> InterpreterMonad Value
-transIntExp x = case x of
-  IntAdd intexp1 intexp2 -> evalInfixOp intexp1 intexp2 (+)
-  IntSub intexp1 intexp2 -> evalInfixOp intexp1 intexp2 (-)
-  IntMult intexp1 intexp2 -> evalInfixOp intexp1 intexp2 (*)
-  IntDiv intexp1 intexp2 -> do
-    r <- transIntExp intexp2
-    case r of
-      VInt 0 -> returnError "Interpreter tried to divide by zero"
-      otherwise -> evalInfixOp intexp1 intexp2 div
-  IntPare intexp -> transIntExp intexp
-  IntLit integer -> return $ VInt integer
-  IntIdent ident -> getVariable ident
-transBoolExp :: BoolExp -> InterpreterMonad Value
-transBoolExp x = case x of
-  BoolOr boolexp1 boolexp2 -> returnError "not yet implemented"
-  BoolAnd boolexp1 boolexp2 -> returnError "not yet implemented"
-  BoolNot boolexp -> returnError "not yet implemented"
-  BoolIsSmaller intexp1 intexp2 -> returnError "not yet implemented"
-  BoolSmallerOrEq intexp1 intexp2 -> returnError "not yet implemented"
-  BoolGreater intexp1 intexp2 -> returnError "not yet implemented"
-  BoolGreaterOrEq intexp1 intexp2 -> returnError "not yet implemented"
-  BoolEqual intexp1 intexp2 -> returnError "not yet implemented"
-  BoolEqual2 stringexp1 stringexp2 -> returnError "not yet implemented"
-  BoolNotEqual intexp1 intexp2 -> returnError "not yet implemented"
-  BoolPare boolexp -> returnError "not yet implemented"
-  BoolIdent ident -> returnError "not yet implemented"
+  BoolOr exp1 exp2 -> returnError "not yet implemented"
+  BoolAnd exp1 exp2 -> returnError "not yet implemented"
+  BoolNot exp -> returnError "not yet implemented"
+  BoolIsSmaller exp1 exp2 -> returnError "not yet implemented"
+  BoolSmallerOrEq exp1 exp2 -> returnError "not yet implemented"
+  BoolGreater exp1 exp2 -> returnError "not yet implemented"
+  BoolGreaterOrEq exp1 exp2 -> returnError "not yet implemented"
+  BoolEqual exp1 exp2 -> returnError "not yet implemented"
+  BoolNotEqual exp1 exp2 -> returnError "not yet implemented"
+  Add exp1 exp2 -> returnError "not yet implemented"
+  IntSub exp1 exp2 -> returnError "not yet implemented"
+  IntMult exp1 exp2 -> returnError "not yet implemented"
+  IntDiv exp1 exp2 -> returnError "not yet implemented"
+  Pare exp -> returnError "not yet implemented"
+  IntLit integer -> returnError "not yet implemented"
   BoolLit boolean -> returnError "not yet implemented"
-transStringExp :: StringExp -> InterpreterMonad Value
-transStringExp x = case x of
-  StringConcat stringexp1 stringexp2 -> returnError "not yet implemented"
-  StringIdent ident -> returnError "not yet implemented"
   StringLit string -> returnError "not yet implemented"
+  IntIdent ident -> returnError "not yet implemented"
+  GetListElem ident exp -> returnError "not yet implemented"
 transLiterals :: Literals -> InterpreterMonad Value
 transLiterals x = case x of
   SLitNull -> returnError "not yet implemented"
@@ -116,17 +98,17 @@ transTuple x = case x of
   STuple literals -> returnError "not yet implemented"
 
 
-evalInfixOp :: IntExp -> IntExp -> (forall a. Integral a => a -> a -> a) -> InterpreterMonad Value
-evalInfixOp expr1 expr2 op = do
-  r1 <- transIntExp expr1
-  r2 <- transIntExp expr2
-  case (r1,r2) of
-    (VInt i, VInt i2) -> return $ VInt (op i i2)
-    _ -> returnError "Interpreter expected int values for infix operator"
-
-getVariable :: Ident -> InterpreterMonad Value
-getVariable var = InterpreterMonad $ \s ->
-  let maybeVal = Map.lookup var s in
-  case maybeVal of
-    Just val -> Right (val, s)
-    _ -> Left "Interpreter tried to get value of non-existent variable"
+--evalInfixOp :: IntExp -> IntExp -> (forall a. Integral a => a -> a -> a) -> InterpreterMonad Value
+--evalInfixOp expr1 expr2 op = do
+--  r1 <- transIntExp expr1
+--  r2 <- transIntExp expr2
+--  case (r1,r2) of
+--    (VInt i, VInt i2) -> return $ VInt (op i i2)
+--    _ -> returnError "Interpreter expected int values for infix operator"
+--
+--getVariable :: Ident -> InterpreterMonad Value
+--getVariable var = InterpreterMonad $ \s ->
+--  let maybeVal = Map.lookup var s in
+--  case maybeVal of
+--    Just val -> Right (val, s)
+--    _ -> Left "Interpreter tried to get value of non-existent variable"

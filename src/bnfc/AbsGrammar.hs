@@ -17,17 +17,17 @@ data Stmts = StmtsNull | SStmts Stmt Stmts
 data Stmt
     = Assign Ident Exp
     | ConstAssign Ident Exp
-    | If BoolExp BracedStmts
-    | IfElse BoolExp BracedStmts BracedStmts
-    | For Ident IntExp IntExp BracedStmts
-    | While BoolExp BracedStmts
+    | If Exp BracedStmts
+    | IfElse Exp BracedStmts BracedStmts
+    | For Ident Exp Exp BracedStmts
+    | While Exp BracedStmts
     | Break
     | Continue
     | FuncCall Ident Exp
     | FuncDecl Ident Ident BracedStmts
     | Return Exp
     | Print ParIdent
-    | AssignListElem Ident IntExp Exp
+    | AssignListElem Ident Exp Exp
     | GetListSize List
     | AppendListElem Ident Exp
     | AssignTuple Ident Tuple
@@ -51,44 +51,27 @@ data Boolean = BoolTrue | BoolFalse
   deriving (Eq, Ord, Show, Read)
 
 data Exp
-    = ExpInt IntExp
-    | ExpString StringExp
-    | ExpBool BoolExp
-    | ExpList List
+    = ExpList List
     | ExpTuple Tuple
-    | GetListElem Ident IntExp
-  deriving (Eq, Ord, Show, Read)
-
-data IntExp
-    = IntAdd IntExp IntExp
-    | IntSub IntExp IntExp
-    | IntMult IntExp IntExp
-    | IntDiv IntExp IntExp
-    | IntPare IntExp
+    | BoolOr Exp Exp
+    | BoolAnd Exp Exp
+    | BoolNot Exp
+    | BoolIsSmaller Exp Exp
+    | BoolSmallerOrEq Exp Exp
+    | BoolGreater Exp Exp
+    | BoolGreaterOrEq Exp Exp
+    | BoolEqual Exp Exp
+    | BoolNotEqual Exp Exp
+    | Add Exp Exp
+    | IntSub Exp Exp
+    | IntMult Exp Exp
+    | IntDiv Exp Exp
+    | Pare Exp
     | IntLit Integer
-    | IntIdent Ident
-  deriving (Eq, Ord, Show, Read)
-
-data BoolExp
-    = BoolOr BoolExp BoolExp
-    | BoolAnd BoolExp BoolExp
-    | BoolNot BoolExp
-    | BoolIsSmaller IntExp IntExp
-    | BoolSmallerOrEq IntExp IntExp
-    | BoolGreater IntExp IntExp
-    | BoolGreaterOrEq IntExp IntExp
-    | BoolEqual IntExp IntExp
-    | BoolEqual2 StringExp StringExp
-    | BoolNotEqual IntExp IntExp
-    | BoolPare BoolExp
-    | BoolIdent Ident
     | BoolLit Boolean
-  deriving (Eq, Ord, Show, Read)
-
-data StringExp
-    = StringConcat StringExp StringExp
-    | StringIdent Ident
     | StringLit String
+    | IntIdent Ident
+    | GetListElem Ident Exp
   deriving (Eq, Ord, Show, Read)
 
 data Literals

@@ -100,17 +100,17 @@ instance Print Stmt where
   prt i e = case e of
     Assign id exp -> prPrec i 0 (concatD [prt 0 id, doc (showString "="), prt 0 exp])
     ConstAssign id exp -> prPrec i 0 (concatD [doc (showString "final"), prt 0 id, doc (showString "="), prt 0 exp])
-    If boolexp bracedstmts -> prPrec i 0 (concatD [doc (showString "if"), prt 0 boolexp, prt 0 bracedstmts])
-    IfElse boolexp bracedstmts1 bracedstmts2 -> prPrec i 0 (concatD [doc (showString "if"), prt 0 boolexp, prt 0 bracedstmts1, doc (showString "else"), prt 0 bracedstmts2])
-    For id intexp1 intexp2 bracedstmts -> prPrec i 0 (concatD [doc (showString "for"), prt 0 id, doc (showString "in"), doc (showString "range"), doc (showString "("), prt 0 intexp1, doc (showString ","), prt 0 intexp2, doc (showString ")"), prt 0 bracedstmts])
-    While boolexp bracedstmts -> prPrec i 0 (concatD [doc (showString "while"), prt 0 boolexp, prt 0 bracedstmts])
+    If exp bracedstmts -> prPrec i 0 (concatD [doc (showString "if"), prt 0 exp, prt 0 bracedstmts])
+    IfElse exp bracedstmts1 bracedstmts2 -> prPrec i 0 (concatD [doc (showString "if"), prt 0 exp, prt 0 bracedstmts1, doc (showString "else"), prt 0 bracedstmts2])
+    For id exp1 exp2 bracedstmts -> prPrec i 0 (concatD [doc (showString "for"), prt 0 id, doc (showString "in"), doc (showString "range"), doc (showString "("), prt 0 exp1, doc (showString ","), prt 0 exp2, doc (showString ")"), prt 0 bracedstmts])
+    While exp bracedstmts -> prPrec i 0 (concatD [doc (showString "while"), prt 0 exp, prt 0 bracedstmts])
     Break -> prPrec i 0 (concatD [doc (showString "break")])
     Continue -> prPrec i 0 (concatD [doc (showString "continue")])
     FuncCall id exp -> prPrec i 0 (concatD [prt 0 id, doc (showString "("), prt 0 exp, doc (showString ")")])
     FuncDecl id1 id2 bracedstmts -> prPrec i 0 (concatD [doc (showString "def"), prt 0 id1, doc (showString "("), prt 0 id2, doc (showString ")"), prt 0 bracedstmts])
     Return exp -> prPrec i 0 (concatD [doc (showString "return"), prt 0 exp])
     Print parident -> prPrec i 0 (concatD [doc (showString "print"), prt 0 parident])
-    AssignListElem id intexp exp -> prPrec i 0 (concatD [prt 0 id, doc (showString "["), prt 0 intexp, doc (showString "]"), doc (showString "="), prt 0 exp])
+    AssignListElem id exp1 exp2 -> prPrec i 0 (concatD [prt 0 id, doc (showString "["), prt 0 exp1, doc (showString "]"), doc (showString "="), prt 0 exp2])
     GetListSize list -> prPrec i 0 (concatD [doc (showString "len"), doc (showString "("), prt 0 list, doc (showString ")")])
     AppendListElem id exp -> prPrec i 0 (concatD [prt 0 id, doc (showString ".append("), prt 0 exp, doc (showString ")")])
     AssignTuple id tuple -> prPrec i 0 (concatD [prt 0 id, doc (showString "="), prt 0 tuple])
@@ -138,44 +138,27 @@ instance Print Boolean where
 
 instance Print Exp where
   prt i e = case e of
-    ExpInt intexp -> prPrec i 0 (concatD [prt 0 intexp])
-    ExpString stringexp -> prPrec i 0 (concatD [prt 0 stringexp])
-    ExpBool boolexp -> prPrec i 0 (concatD [prt 0 boolexp])
     ExpList list -> prPrec i 0 (concatD [prt 0 list])
     ExpTuple tuple -> prPrec i 0 (concatD [prt 0 tuple])
-    GetListElem id intexp -> prPrec i 0 (concatD [prt 0 id, doc (showString "["), prt 0 intexp, doc (showString "]")])
-
-instance Print IntExp where
-  prt i e = case e of
-    IntAdd intexp1 intexp2 -> prPrec i 0 (concatD [prt 0 intexp1, doc (showString "+"), prt 1 intexp2])
-    IntSub intexp1 intexp2 -> prPrec i 0 (concatD [prt 0 intexp1, doc (showString "-"), prt 1 intexp2])
-    IntMult intexp1 intexp2 -> prPrec i 1 (concatD [prt 1 intexp1, doc (showString "*"), prt 2 intexp2])
-    IntDiv intexp1 intexp2 -> prPrec i 1 (concatD [prt 1 intexp1, doc (showString "/"), prt 2 intexp2])
-    IntPare intexp -> prPrec i 2 (concatD [doc (showString "("), prt 0 intexp, doc (showString ")")])
-    IntLit n -> prPrec i 2 (concatD [prt 0 n])
-    IntIdent id -> prPrec i 2 (concatD [prt 0 id])
-
-instance Print BoolExp where
-  prt i e = case e of
-    BoolOr boolexp1 boolexp2 -> prPrec i 0 (concatD [prt 0 boolexp1, doc (showString "or"), prt 1 boolexp2])
-    BoolAnd boolexp1 boolexp2 -> prPrec i 1 (concatD [prt 1 boolexp1, doc (showString "and"), prt 2 boolexp2])
-    BoolNot boolexp -> prPrec i 2 (concatD [doc (showString "not"), prt 2 boolexp])
-    BoolIsSmaller intexp1 intexp2 -> prPrec i 2 (concatD [prt 0 intexp1, doc (showString "<"), prt 0 intexp2])
-    BoolSmallerOrEq intexp1 intexp2 -> prPrec i 2 (concatD [prt 0 intexp1, doc (showString "<="), prt 0 intexp2])
-    BoolGreater intexp1 intexp2 -> prPrec i 2 (concatD [prt 0 intexp1, doc (showString ">"), prt 0 intexp2])
-    BoolGreaterOrEq intexp1 intexp2 -> prPrec i 2 (concatD [prt 0 intexp1, doc (showString ">="), prt 0 intexp2])
-    BoolEqual intexp1 intexp2 -> prPrec i 2 (concatD [prt 0 intexp1, doc (showString "=="), prt 0 intexp2])
-    BoolEqual2 stringexp1 stringexp2 -> prPrec i 2 (concatD [prt 0 stringexp1, doc (showString "=="), prt 0 stringexp2])
-    BoolNotEqual intexp1 intexp2 -> prPrec i 2 (concatD [prt 0 intexp1, doc (showString "!="), prt 0 intexp2])
-    BoolPare boolexp -> prPrec i 2 (concatD [doc (showString "("), prt 0 boolexp, doc (showString ")")])
-    BoolIdent id -> prPrec i 2 (concatD [prt 0 id])
-    BoolLit boolean -> prPrec i 2 (concatD [prt 0 boolean])
-
-instance Print StringExp where
-  prt i e = case e of
-    StringConcat stringexp1 stringexp2 -> prPrec i 0 (concatD [prt 0 stringexp1, doc (showString "+"), prt 1 stringexp2])
-    StringIdent id -> prPrec i 1 (concatD [prt 0 id])
-    StringLit str -> prPrec i 1 (concatD [prt 0 str])
+    BoolOr exp1 exp2 -> prPrec i 0 (concatD [prt 0 exp1, doc (showString "or"), prt 1 exp2])
+    BoolAnd exp1 exp2 -> prPrec i 1 (concatD [prt 1 exp1, doc (showString "and"), prt 2 exp2])
+    BoolNot exp -> prPrec i 2 (concatD [doc (showString "not"), prt 2 exp])
+    BoolIsSmaller exp1 exp2 -> prPrec i 2 (concatD [prt 3 exp1, doc (showString "<"), prt 3 exp2])
+    BoolSmallerOrEq exp1 exp2 -> prPrec i 2 (concatD [prt 3 exp1, doc (showString "<="), prt 3 exp2])
+    BoolGreater exp1 exp2 -> prPrec i 2 (concatD [prt 3 exp1, doc (showString ">"), prt 3 exp2])
+    BoolGreaterOrEq exp1 exp2 -> prPrec i 2 (concatD [prt 3 exp1, doc (showString ">="), prt 3 exp2])
+    BoolEqual exp1 exp2 -> prPrec i 2 (concatD [prt 3 exp1, doc (showString "=="), prt 3 exp2])
+    BoolNotEqual exp1 exp2 -> prPrec i 2 (concatD [prt 3 exp1, doc (showString "!="), prt 3 exp2])
+    Add exp1 exp2 -> prPrec i 3 (concatD [prt 3 exp1, doc (showString "+"), prt 4 exp2])
+    IntSub exp1 exp2 -> prPrec i 3 (concatD [prt 3 exp1, doc (showString "-"), prt 4 exp2])
+    IntMult exp1 exp2 -> prPrec i 4 (concatD [prt 4 exp1, doc (showString "*"), prt 5 exp2])
+    IntDiv exp1 exp2 -> prPrec i 4 (concatD [prt 4 exp1, doc (showString "/"), prt 5 exp2])
+    Pare exp -> prPrec i 5 (concatD [doc (showString "("), prt 0 exp, doc (showString ")")])
+    IntLit n -> prPrec i 5 (concatD [prt 0 n])
+    BoolLit boolean -> prPrec i 5 (concatD [prt 0 boolean])
+    StringLit str -> prPrec i 5 (concatD [prt 0 str])
+    IntIdent id -> prPrec i 5 (concatD [prt 0 id])
+    GetListElem id exp -> prPrec i 0 (concatD [prt 0 id, doc (showString "["), prt 0 exp, doc (showString "]")])
 
 instance Print Literals where
   prt i e = case e of
