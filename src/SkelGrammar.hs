@@ -70,15 +70,26 @@ transExp x = case x of
   BoolGreaterOrEq exp1 exp2 -> returnError "not yet implemented"
   BoolEqual exp1 exp2 -> returnError "not yet implemented"
   BoolNotEqual exp1 exp2 -> returnError "not yet implemented"
-  Add exp1 exp2 -> returnError "not yet implemented"
-  IntSub exp1 exp2 -> returnError "not yet implemented"
-  IntMult exp1 exp2 -> returnError "not yet implemented"
+  Add exp1 exp2 -> do
+    e1 <- transExp exp1
+    e2 <- transExp exp2
+    case (e1,e2) of
+      (VInt i1,VInt i2) -> evalInfixOp exp1 exp2 (+)
+      (VString s1, VString s2) -> returnError "Interpreter tried to divide by zero"
+      otherwise -> returnError "wrong types passed to + operator"
+  IntSub exp1 exp2 -> evalInfixOp exp1 exp2 (-)
+  IntMult exp1 exp2 -> evalInfixOp exp1 exp2 (*)
+  IntDiv exp1 exp2 -> do
+      r <- transExp exp1
+      case r of
+        VInt 0 -> returnError "Interpreter tried to divide by zero"
+        otherwise -> evalInfixOp exp1 exp2 div
   IntDiv exp1 exp2 -> returnError "not yet implemented"
-  Pare exp -> returnError "not yet implemented"
-  IntLit integer -> returnError "not yet implemented"
+  Pare exp -> transExp exp
+  IntLit integer -> return $ VInt integer
   BoolLit boolean -> returnError "not yet implemented"
   StringLit string -> returnError "not yet implemented"
-  IntIdent ident -> returnError "not yet implemented"
+  SSIdent ident -> getVariable ident
   GetListElem ident exp -> returnError "not yet implemented"
 transLiterals :: Literals -> InterpreterMonad Value
 transLiterals x = case x of
@@ -98,17 +109,17 @@ transTuple x = case x of
   STuple literals -> returnError "not yet implemented"
 
 
---evalInfixOp :: IntExp -> IntExp -> (forall a. Integral a => a -> a -> a) -> InterpreterMonad Value
---evalInfixOp expr1 expr2 op = do
---  r1 <- transIntExp expr1
---  r2 <- transIntExp expr2
---  case (r1,r2) of
---    (VInt i, VInt i2) -> return $ VInt (op i i2)
---    _ -> returnError "Interpreter expected int values for infix operator"
---
---getVariable :: Ident -> InterpreterMonad Value
---getVariable var = InterpreterMonad $ \s ->
---  let maybeVal = Map.lookup var s in
---  case maybeVal of
---    Just val -> Right (val, s)
---    _ -> Left "Interpreter tried to get value of non-existent variable"
+evalInfixOp :: Exp -> Exp -> (forall a. Integral a => a -> a -> a) -> InterpreterMonad Value
+evalInfixOp expr1 expr2 op = do
+  r1 <- transExp expr1
+  r2 <- transExp expr2
+  case (r1,r2) of
+    (VInt i, VInt i2) -> return $ VInt (op i i2)
+    _ -> returnError "Interpreter expected int values for infix operator"
+
+getVariable :: Ident -> InterpreterMonad Value
+getVariable var = InterpreterMonad $ \s ->
+  let maybeVal = Map.lookup var s in
+  case maybeVal of
+    Just val -> Right (val, s)
+    _ -> Left "Interpreter tried to get value of non-existent variable"

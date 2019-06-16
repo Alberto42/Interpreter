@@ -70,7 +70,7 @@ data Exp
     | IntLit Integer
     | BoolLit Boolean
     | StringLit String
-    | IntIdent Ident
+    | SSIdent Ident
     | GetListElem Ident Exp
   deriving (Eq, Ord, Show, Read)
 

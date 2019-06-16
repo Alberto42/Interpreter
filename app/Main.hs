@@ -22,7 +22,7 @@ parseAndExecute s =
   in case result of
     Bad s -> putStrLn "Parsing failed! :("
     Ok tree -> do
-      putStrLn $ show tree
+--      putStrLn $ show tree
       handleOutput $ transProgram tree
 
 main :: IO ()

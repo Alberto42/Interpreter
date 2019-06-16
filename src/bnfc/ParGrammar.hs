@@ -771,7 +771,7 @@ happyReduce_57 = happySpecReduce_1  15# happyReduction_57
 happyReduction_57 happy_x_1
 	 =  case happyOut4 happy_x_1 of { happy_var_1 -> 
 	happyIn19
-		 (AbsGrammar.IntIdent happy_var_1
+		 (AbsGrammar.SSIdent happy_var_1
 	)}
 
 happyReduce_58 = happySpecReduce_3  15# happyReduction_58

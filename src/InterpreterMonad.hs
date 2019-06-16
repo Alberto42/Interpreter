@@ -3,7 +3,7 @@ module InterpreterMonad where
 import AbsGrammar (Ident)
 import qualified Data.Map             as Map
 
-data Value = VInt Integer | Null deriving (Show)
+data Value = VInt Integer | Null | VString String deriving (Show)
 type State = Map.Map Ident Value
 
 type InterpreterMonadInternal a = State -> Either String (a,State)

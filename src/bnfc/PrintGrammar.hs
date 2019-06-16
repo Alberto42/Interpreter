@@ -157,7 +157,7 @@ instance Print Exp where
     IntLit n -> prPrec i 5 (concatD [prt 0 n])
     BoolLit boolean -> prPrec i 5 (concatD [prt 0 boolean])
     StringLit str -> prPrec i 5 (concatD [prt 0 str])
-    IntIdent id -> prPrec i 5 (concatD [prt 0 id])
+    SSIdent id -> prPrec i 5 (concatD [prt 0 id])
     GetListElem id exp -> prPrec i 0 (concatD [prt 0 id, doc (showString "["), prt 0 exp, doc (showString "]")])
 
 instance Print Literals where
