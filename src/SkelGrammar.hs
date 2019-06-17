@@ -61,34 +61,37 @@ transExp :: Exp -> InterpreterMonad Value
 transExp x = case x of
   ExpList list -> returnError "not yet implemented"
   ExpTuple tuple -> returnError "not yet implemented"
-  BoolOr exp1 exp2 -> returnError "not yet implemented"
-  BoolAnd exp1 exp2 -> returnError "not yet implemented"
-  BoolNot exp -> returnError "not yet implemented"
-  BoolIsSmaller exp1 exp2 -> returnError "not yet implemented"
-  BoolSmallerOrEq exp1 exp2 -> returnError "not yet implemented"
-  BoolGreater exp1 exp2 -> returnError "not yet implemented"
-  BoolGreaterOrEq exp1 exp2 -> returnError "not yet implemented"
-  BoolEqual exp1 exp2 -> returnError "not yet implemented"
-  BoolNotEqual exp1 exp2 -> returnError "not yet implemented"
-  Add exp1 exp2 -> do
-    e1 <- transExp exp1
-    e2 <- transExp exp2
-    case (e1,e2) of
-      (VInt i1,VInt i2) -> evalInfixOp exp1 exp2 (+)
-      (VString s1, VString s2) -> returnError "Interpreter tried to divide by zero"
-      otherwise -> returnError "wrong types passed to + operator"
-  IntSub exp1 exp2 -> evalInfixOp exp1 exp2 (-)
-  IntMult exp1 exp2 -> evalInfixOp exp1 exp2 (*)
+  BoolOr exp1 exp2 -> booleanOp exp1 exp2 "or" (||)
+  BoolAnd exp1 exp2 -> booleanOp exp1 exp2 "and" (&&)
+  BoolNot exp -> do
+    v <- transExp exp
+    case v of
+      VBoolean b -> return $ VBoolean $ not b
+      otherwise -> returnError "Wrong type of not operator"
+  BoolIsSmaller exp1 exp2 -> booleanCompOp exp1 exp2 "<" (<) (<)
+  BoolSmallerOrEq exp1 exp2 -> booleanCompOp exp1 exp2 "<=" (<=) (<=)
+  BoolGreater exp1 exp2 -> booleanCompOp exp1 exp2 ">" (>) (>)
+  BoolGreaterOrEq exp1 exp2 -> booleanCompOp exp1 exp2 ">=" (>=) (>=)
+  BoolEqual exp1 exp2 -> booleanEqOp exp1 exp2 "==" (==) (==) (==)
+  BoolNotEqual exp1 exp2 -> booleanEqOp exp1 exp2 "!=" (/=) (/=) (/=)
+  Add exp1 exp2 -> evalInfixOp exp1 exp2
+    (\a b -> case (a,b) of
+      (VInt i1, VInt i2) -> return $ VInt (i1+i2)
+      (VString s1, VString s2) -> return $ VString(s1 ++ s2)
+      otherwise -> returnError "Wrong types of + operator")
+  IntSub exp1 exp2 -> integerEvalInfixOp exp1 exp2 (-)
+  IntMult exp1 exp2 -> integerEvalInfixOp exp1 exp2 (*)
   IntDiv exp1 exp2 -> do
       r <- transExp exp1
       case r of
         VInt 0 -> returnError "Interpreter tried to divide by zero"
-        otherwise -> evalInfixOp exp1 exp2 div
-  IntDiv exp1 exp2 -> returnError "not yet implemented"
+        otherwise -> integerEvalInfixOp exp1 exp2 div
   Pare exp -> transExp exp
   IntLit integer -> return $ VInt integer
-  BoolLit boolean -> returnError "not yet implemented"
-  StringLit string -> returnError "not yet implemented"
+  BoolLit boolean -> return $ case boolean of
+    BoolTrue -> VBoolean True
+    BoolFalse -> VBoolean False
+  StringLit string -> return $ VString string
   SSIdent ident -> getVariable ident
   GetListElem ident exp -> returnError "not yet implemented"
 transLiterals :: Literals -> InterpreterMonad Value
@@ -109,8 +112,13 @@ transTuple x = case x of
   STuple literals -> returnError "not yet implemented"
 
 
-evalInfixOp :: Exp -> Exp -> (forall a. Integral a => a -> a -> a) -> InterpreterMonad Value
 evalInfixOp expr1 expr2 op = do
+  r1 <- transExp expr1
+  r2 <- transExp expr2
+  op r1 r2
+
+integerEvalInfixOp :: Exp -> Exp -> (forall a. Integral a => a -> a -> a) -> InterpreterMonad Value
+integerEvalInfixOp expr1 expr2 op = do
   r1 <- transExp expr1
   r2 <- transExp expr2
   case (r1,r2) of
@@ -123,3 +131,22 @@ getVariable var = InterpreterMonad $ \s ->
   case maybeVal of
     Just val -> Right (val, s)
     _ -> Left "Interpreter tried to get value of non-existent variable"
+
+--booleanCompOp :: Exp -> Exp -> String -> (forall a. Integral a => a -> a -> Bool) -> InterpreterMonad Value
+booleanCompOp expr1 expr2 opMsg opInt opStr = evalInfixOp expr1 expr2
+  (\a b -> case (a,b) of
+    (VInt i1, VInt i2) -> return $ VBoolean (opInt i1 i2)
+    (VString s1, VString s2) -> return $ VBoolean (opStr s1 s2)
+    otherwise -> returnError $ "Wrong types of " ++ opMsg ++ " operator")
+
+booleanEqOp expr1 expr2 opMsg opInt opStr opBool = evalInfixOp expr1 expr2
+  (\a b -> case (a,b) of
+    (VInt i1, VInt i2) -> return $ VBoolean (opInt i1 i2)
+    (VString s1, VString s2) -> return $ VBoolean (opStr s1 s2)
+    (VBoolean b1, VBoolean b2) -> return $ VBoolean (opBool b1 b2)
+    otherwise -> returnError $ "Wrong types of " ++ opMsg ++ " operator")
+
+booleanOp expr1 expr2 opMsg op = evalInfixOp expr1 expr2
+  (\a b -> case (a,b) of
+    (VBoolean b1, VBoolean b2) -> return $ VBoolean (op b1 b2)
+    otherwise -> returnError $ "Wrong types of " ++ opMsg ++ " operator")
