@@ -49,8 +49,13 @@ transStmt x = case x of
         then do
           maybeOriginalIdent <- getVariable ident
           setVariable ident val1
-          transBracedStmts bracedstmts
-          transStmt $ For ident (IntLit $ i1+1) (IntLit i2) bracedstmts
+          status <- transBracedStmts bracedstmts
+          let nextLoopStepMonad = transStmt $ For ident (IntLit $ i1+1) (IntLit i2) bracedstmts in
+            case status of
+              OK -> nextLoopStepMonad
+              VBreak -> return OK
+              VContinue -> nextLoopStepMonad
+
           case maybeOriginalIdent of
             Just val -> setVariable ident val
             Nothing -> removeVariable ident
@@ -63,10 +68,11 @@ transStmt x = case x of
       VBoolean b ->
         if b then do
           status <- transBracedStmts bracedstmts
-          case status of
-            OK -> transStmt $ While exp bracedstmts
-            VBreak -> return OK
-            VContinue -> transStmt $ While exp bracedstmts
+          let nextLoopStepMonad = transStmt $ While exp bracedstmts in
+            case status of
+              OK -> nextLoopStepMonad
+              VBreak -> return OK
+              VContinue -> nextLoopStepMonad
         else return OK
       otherwise -> returnError "wrong condition in while loop"
   Break -> return VBreak

@@ -1,0 +1,1 @@
+Right (OK,fromList [(Ident "i",VInt 3),(Ident "x",VInt 0),(Ident "y",VInt 9)])
