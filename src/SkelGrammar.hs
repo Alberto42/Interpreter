@@ -11,7 +11,7 @@ import Utils
 
 transIdent :: Ident -> InterpreterMonad Value
 transIdent x = case x of
-  Ident string -> returnError "not yet implemented"
+  Ident string -> returnError "not yet implemented 1"
 transProgram :: Program -> InterpreterMonad Value
 transProgram x = case x of
   SProgram stmts -> transStmts stmts
@@ -25,42 +25,50 @@ transStmt x = case x of
     val <- transExp exp
     InterpreterMonad $ \s -> Right (Null, Map.insert ident val s)
 
-  ConstAssign ident exp -> returnError "not yet implemented"
-  If exp bracedstmts -> returnError "not yet implemented"
-  IfElse exp bracedstmts1 bracedstmts2 -> returnError "not yet implemented"
-  For ident exp1 exp2 bracedstmts -> returnError "not yet implemented"
-  While exp bracedstmts -> returnError "not yet implemented"
-  Break -> returnError "not yet implemented"
-  Continue -> returnError "not yet implemented"
-  FuncCall ident exp -> returnError "not yet implemented"
-  FuncDecl ident1 ident2 bracedstmts -> returnError "not yet implemented"
-  Return exp -> returnError "not yet implemented"
-  Print parident -> returnError "not yet implemented"
-  AssignListElem ident exp1 exp2 -> returnError "not yet implemented"
-  GetListSize list -> returnError "not yet implemented"
-  AppendListElem ident exp -> returnError "not yet implemented"
-  AssignTuple ident tuple -> returnError "not yet implemented"
-  SExtract identifiers ident -> returnError "not yet implemented"
+  ConstAssign ident exp -> returnError "not yet implemented 2"
+  If exp bracedstmts -> do
+    val <- transExp exp
+    case val of
+      VBoolean b -> if b then transBracedStmts bracedstmts else return Null
+      otherwise -> returnError "wrong expression in if"
+  IfElse exp bracedstmts1 bracedstmts2 -> do
+    val <- transExp exp
+    case val of
+      VBoolean b -> transBracedStmts $ if b then bracedstmts1 else bracedstmts2
+      otherwise -> returnError "wrong expression in if"
+  For ident exp1 exp2 bracedstmts -> returnError "not yet implemented 3"
+  While exp bracedstmts -> returnError "not yet implemented 4"
+  Break -> returnError "not yet implemented 5"
+  Continue -> returnError "not yet implemented 6"
+  FuncCall ident exp -> returnError "not yet implemented 7"
+  FuncDecl ident1 ident2 bracedstmts -> returnError "not yet implemented 8"
+  Return exp -> returnError "not yet implemented 9"
+  Print parident -> returnError "not yet implemented 10"
+  AssignListElem ident exp1 exp2 -> returnError "not yet implemented 11"
+  GetListSize list -> returnError "not yet implemented 12"
+  AppendListElem ident exp -> returnError "not yet implemented 13"
+  AssignTuple ident tuple -> returnError "not yet implemented 14"
+  SExtract identifiers ident -> returnError "not yet implemented 15"
 transBracedStmts :: BracedStmts -> InterpreterMonad Value
 transBracedStmts x = case x of
-  SBracedStmts stmts -> returnError "not yet implemented"
+  SBracedStmts stmts -> transStmts stmts
 transParIdent :: ParIdent -> InterpreterMonad Value
 transParIdent x = case x of
-  SParIdent ident -> returnError "not yet implemented"
+  SParIdent ident -> returnError "not yet implemented 16"
 transLiteral :: Literal -> InterpreterMonad Value
 transLiteral x = case x of
-  LiteralStr string -> returnError "not yet implemented"
-  LiteralInt integer -> returnError "not yet implemented"
-  LiteralBool boolean -> returnError "not yet implemented"
-  LiteralTuple tuple -> returnError "not yet implemented"
+  LiteralStr string -> returnError "not yet implemented 17"
+  LiteralInt integer -> returnError "not yet implemented 18"
+  LiteralBool boolean -> returnError "not yet implemented 19"
+  LiteralTuple tuple -> returnError "not yet implemented 20"
 transBoolean :: Boolean -> InterpreterMonad Value
 transBoolean x = case x of
-  BoolTrue -> returnError "not yet implemented"
-  BoolFalse -> returnError "not yet implemented"
+  BoolTrue -> returnError "not yet implemented 21"
+  BoolFalse -> returnError "not yet implemented 22"
 transExp :: Exp -> InterpreterMonad Value
 transExp x = case x of
-  ExpList list -> returnError "not yet implemented"
-  ExpTuple tuple -> returnError "not yet implemented"
+  ExpList list -> returnError "not yet implemented 23"
+  ExpTuple tuple -> returnError "not yet implemented 24"
   BoolOr exp1 exp2 -> booleanOp exp1 exp2 "or" (||)
   BoolAnd exp1 exp2 -> booleanOp exp1 exp2 "and" (&&)
   BoolNot exp -> do
@@ -93,23 +101,23 @@ transExp x = case x of
     BoolFalse -> VBoolean False
   StringLit string -> return $ VString string
   SSIdent ident -> getVariable ident
-  GetListElem ident exp -> returnError "not yet implemented"
+  GetListElem ident exp -> returnError "not yet implemented 25"
 transLiterals :: Literals -> InterpreterMonad Value
 transLiterals x = case x of
-  SLitNull -> returnError "not yet implemented"
-  SLit literal literals -> returnError "not yet implemented"
-  SLitSingle literal -> returnError "not yet implemented"
+  SLitNull -> returnError "not yet implemented 26"
+  SLit literal literals -> returnError "not yet implemented 27"
+  SLitSingle literal -> returnError "not yet implemented 28"
 transIdentifiers :: Identifiers -> InterpreterMonad Value
 transIdentifiers x = case x of
-  SIdentNull -> returnError "not yet implemented"
-  SIdent ident identifiers -> returnError "not yet implemented"
-  SIdentSingle ident -> returnError "not yet implemented"
+  SIdentNull -> returnError "not yet implemented 29"
+  SIdent ident identifiers -> returnError "not yet implemented 30"
+  SIdentSingle ident -> returnError "not yet implemented 31"
 transList :: List -> InterpreterMonad Value
 transList x = case x of
-  SList literals -> returnError "not yet implemented"
+  SList literals -> returnError "not yet implemented 32"
 transTuple :: Tuple -> InterpreterMonad Value
 transTuple x = case x of
-  STuple literals -> returnError "not yet implemented"
+  STuple literals -> returnError "not yet implemented 33"
 
 
 evalInfixOp expr1 expr2 op = do
