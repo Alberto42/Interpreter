@@ -9,6 +9,7 @@ import InterpreterMonad
 import qualified Data.Map             as Map
 import Utils
 
+
 transIdent :: Ident -> InterpreterMonad Value
 transIdent x = case x of
   Ident string -> returnError "not yet implemented 1"
@@ -23,7 +24,7 @@ transStmt :: Stmt -> InterpreterMonad Value
 transStmt x = case x of
   Assign ident exp -> do
     val <- transExp exp
-    InterpreterMonad $ \s -> Right (Null, Map.insert ident val s)
+    setVariable ident val
 
   ConstAssign ident exp -> returnError "not yet implemented 2"
   If exp bracedstmts -> do
@@ -36,7 +37,22 @@ transStmt x = case x of
     case val of
       VBoolean b -> transBracedStmts $ if b then bracedstmts1 else bracedstmts2
       otherwise -> returnError "wrong condition in if"
-  For ident exp1 exp2 bracedstmts -> returnError "not yet implemented 3"
+  For ident exp1 exp2 bracedstmts -> do
+    val1 <- transExp exp1
+    val2 <- transExp exp2
+    case (val1, val2) of
+      (VInt i1, VInt i2) -> if i1 <= i2
+        then do
+          maybeOriginalIdent <- getVariable ident
+          setVariable ident val1
+          transBracedStmts bracedstmts
+          transStmt $ For ident (IntLit $ i1+1) (IntLit i2) bracedstmts
+          case maybeOriginalIdent of
+            Just val -> setVariable ident val
+            Nothing -> removeVariable ident
+
+        else return Null
+      otherwise -> returnError "wrong range types in for loop"
   While exp bracedstmts -> do
     val <- transExp exp
     case val of
@@ -104,7 +120,11 @@ transExp x = case x of
     BoolTrue -> VBoolean True
     BoolFalse -> VBoolean False
   StringLit string -> return $ VString string
-  SSIdent ident -> getVariable ident
+  SSIdent ident -> do
+    maybeVal <- getVariable ident
+    case maybeVal of
+      Just val -> return val
+      _ -> returnError "Interpreter tried to get value of non-existent variable"
   GetListElem ident exp -> returnError "not yet implemented 25"
 transLiterals :: Literals -> InterpreterMonad Value
 transLiterals x = case x of
@@ -137,12 +157,16 @@ integerEvalInfixOp expr1 expr2 op = do
     (VInt i, VInt i2) -> return $ VInt (op i i2)
     _ -> returnError "Interpreter expected int values for infix operator"
 
-getVariable :: Ident -> InterpreterMonad Value
+getVariable :: Ident -> InterpreterMonad (Maybe Value)
 getVariable var = InterpreterMonad $ \s ->
   let maybeVal = Map.lookup var s in
-  case maybeVal of
-    Just val -> Right (val, s)
-    _ -> Left "Interpreter tried to get value of non-existent variable"
+  Right (maybeVal, s)
+
+setVariable :: Ident -> Value -> InterpreterMonad Value
+setVariable ident val = InterpreterMonad $ \s -> Right (Null, Map.insert ident val s)
+
+removeVariable :: Ident -> InterpreterMonad Value
+removeVariable ident = InterpreterMonad $ \s -> Right (Null, Map.delete ident s)
 
 --booleanCompOp :: Exp -> Exp -> String -> (forall a. Integral a => a -> a -> Bool) -> InterpreterMonad Value
 booleanCompOp expr1 expr2 opMsg opInt opStr = evalInfixOp expr1 expr2
