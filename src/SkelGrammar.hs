@@ -30,14 +30,18 @@ transStmt x = case x of
     val <- transExp exp
     case val of
       VBoolean b -> if b then transBracedStmts bracedstmts else return Null
-      otherwise -> returnError "wrong expression in if"
+      otherwise -> returnError "wrong condition in if"
   IfElse exp bracedstmts1 bracedstmts2 -> do
     val <- transExp exp
     case val of
       VBoolean b -> transBracedStmts $ if b then bracedstmts1 else bracedstmts2
-      otherwise -> returnError "wrong expression in if"
+      otherwise -> returnError "wrong condition in if"
   For ident exp1 exp2 bracedstmts -> returnError "not yet implemented 3"
-  While exp bracedstmts -> returnError "not yet implemented 4"
+  While exp bracedstmts -> do
+    val <- transExp exp
+    case val of
+      VBoolean b -> if b then (transBracedStmts bracedstmts) >> (transStmt $ While exp bracedstmts ) else return Null
+      otherwise -> returnError "wrong condition in while loop"
   Break -> returnError "not yet implemented 5"
   Continue -> returnError "not yet implemented 6"
   FuncCall ident exp -> returnError "not yet implemented 7"
