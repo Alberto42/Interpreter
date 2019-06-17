@@ -1,1 +1,1 @@
-Right (VInt 0,fromList [(Ident "a",VInt 9),(Ident "x",VInt 3),(Ident "y",VInt 4),(Ident "z",VInt 2)])
+Right (VInt 0,fromList [(Ident "a",VInt 9),(Ident "v",VInt 1),(Ident "x",VInt 3),(Ident "y",VInt 4),(Ident "z",VInt 2)])

@@ -82,7 +82,7 @@ transExp x = case x of
   IntSub exp1 exp2 -> integerEvalInfixOp exp1 exp2 (-)
   IntMult exp1 exp2 -> integerEvalInfixOp exp1 exp2 (*)
   IntDiv exp1 exp2 -> do
-      r <- transExp exp1
+      r <- transExp exp2
       case r of
         VInt 0 -> returnError "Interpreter tried to divide by zero"
         otherwise -> integerEvalInfixOp exp1 exp2 div
