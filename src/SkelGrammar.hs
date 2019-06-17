@@ -13,14 +13,14 @@ import Utils
 transIdent :: Ident -> InterpreterMonad Value
 transIdent x = case x of
   Ident string -> returnError "not yet implemented 1"
-transProgram :: Program -> InterpreterMonad Value
+transProgram :: Program -> InterpreterMonad StatementValue
 transProgram x = case x of
   SProgram stmts -> transStmts stmts
-transStmts :: Stmts -> InterpreterMonad Value
+transStmts :: Stmts -> InterpreterMonad StatementValue
 transStmts x = case x of
-  StmtsNull -> return $ VInt 0
+  StmtsNull -> return $ OK
   SStmts stmt stmts -> transStmt stmt >> transStmts stmts
-transStmt :: Stmt -> InterpreterMonad Value
+transStmt :: Stmt -> InterpreterMonad StatementValue
 transStmt x = case x of
   Assign ident exp -> do
     val <- transExp exp
@@ -30,7 +30,7 @@ transStmt x = case x of
   If exp bracedstmts -> do
     val <- transExp exp
     case val of
-      VBoolean b -> if b then transBracedStmts bracedstmts else return Null
+      VBoolean b -> if b then transBracedStmts bracedstmts else return OK
       otherwise -> returnError "wrong condition in if"
   IfElse exp bracedstmts1 bracedstmts2 -> do
     val <- transExp exp
@@ -51,7 +51,7 @@ transStmt x = case x of
             Just val -> setVariable ident val
             Nothing -> removeVariable ident
 
-        else return Null
+        else return OK
       otherwise -> returnError "wrong range types in for loop"
   While exp bracedstmts -> do
     val <- transExp exp
@@ -69,7 +69,7 @@ transStmt x = case x of
   AppendListElem ident exp -> returnError "not yet implemented 13"
   AssignTuple ident tuple -> returnError "not yet implemented 14"
   SExtract identifiers ident -> returnError "not yet implemented 15"
-transBracedStmts :: BracedStmts -> InterpreterMonad Value
+transBracedStmts :: BracedStmts -> InterpreterMonad StatementValue
 transBracedStmts x = case x of
   SBracedStmts stmts -> transStmts stmts
 transParIdent :: ParIdent -> InterpreterMonad Value
@@ -162,11 +162,11 @@ getVariable var = InterpreterMonad $ \s ->
   let maybeVal = Map.lookup var s in
   Right (maybeVal, s)
 
-setVariable :: Ident -> Value -> InterpreterMonad Value
-setVariable ident val = InterpreterMonad $ \s -> Right (Null, Map.insert ident val s)
+setVariable :: Ident -> Value -> InterpreterMonad StatementValue
+setVariable ident val = InterpreterMonad $ \s -> Right (undefined, Map.insert ident val s)
 
-removeVariable :: Ident -> InterpreterMonad Value
-removeVariable ident = InterpreterMonad $ \s -> Right (Null, Map.delete ident s)
+removeVariable :: Ident -> InterpreterMonad StatementValue
+removeVariable ident = InterpreterMonad $ \s -> Right (undefined, Map.delete ident s)
 
 --booleanCompOp :: Exp -> Exp -> String -> (forall a. Integral a => a -> a -> Bool) -> InterpreterMonad Value
 booleanCompOp expr1 expr2 opMsg opInt opStr = evalInfixOp expr1 expr2

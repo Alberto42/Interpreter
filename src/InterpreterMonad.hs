@@ -4,6 +4,7 @@ import AbsGrammar (Ident)
 import qualified Data.Map             as Map
 
 data Value = VInt Integer | Null | VString String | VBoolean Bool deriving (Show)
+data StatementValue = OK | VBreak | VContinue
 type State = Map.Map Ident Value
 
 type InterpreterMonadInternal a = State -> Either String (a,State)
@@ -12,7 +13,7 @@ newtype InterpreterMonad a = InterpreterMonad { runInterpreter :: InterpreterMon
 instance Functor InterpreterMonad
 instance Applicative InterpreterMonad
 
-returnError :: String -> InterpreterMonad Value
+returnError :: String -> InterpreterMonad a
 returnError msg = InterpreterMonad $ \s -> Left msg
 instance Monad InterpreterMonad where
   return x = InterpreterMonad $ \s -> Right (x, s)
