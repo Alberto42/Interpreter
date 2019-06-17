@@ -12,7 +12,7 @@ import Utils
 
 transIdent :: Ident -> InterpreterMonad Value
 transIdent x = case x of
-  Ident string -> returnError "not yet implemented 1"
+  Ident string -> returnError "not yet implemented 1" -- useless ?
 transProgram :: Program -> InterpreterMonad StatementValue
 transProgram x = case x of
   SProgram stmts -> transStmts stmts
@@ -94,14 +94,14 @@ transParIdent x = case x of
   SParIdent ident -> returnError "not yet implemented 16"
 transLiteral :: Literal -> InterpreterMonad Value
 transLiteral x = case x of
-  LiteralStr string -> returnError "not yet implemented 17"
-  LiteralInt integer -> returnError "not yet implemented 18"
-  LiteralBool boolean -> returnError "not yet implemented 19"
-  LiteralTuple tuple -> returnError "not yet implemented 20"
+  LiteralStr string -> returnError "not yet implemented 17" -- useless ?
+  LiteralInt integer -> returnError "not yet implemented 18" -- useless ?
+  LiteralBool boolean -> returnError "not yet implemented 19" -- useless ?
+  LiteralTuple tuple -> returnError "not yet implemented 20" -- useless ?
 transBoolean :: Boolean -> InterpreterMonad Value
 transBoolean x = case x of
-  BoolTrue -> returnError "not yet implemented 21"
-  BoolFalse -> returnError "not yet implemented 22"
+  BoolTrue -> return $ VBoolean True
+  BoolFalse -> return $ VBoolean False
 transExp :: Exp -> InterpreterMonad Value
 transExp x = case x of
   ExpList list -> returnError "not yet implemented 23"
@@ -133,9 +133,7 @@ transExp x = case x of
         otherwise -> integerEvalInfixOp exp1 exp2 div
   Pare exp -> transExp exp
   IntLit integer -> return $ VInt integer
-  BoolLit boolean -> return $ case boolean of
-    BoolTrue -> VBoolean True
-    BoolFalse -> VBoolean False
+  BoolLit boolean -> transBoolean boolean
   StringLit string -> return $ VString string
   SSIdent ident -> do
     maybeVal <- getVariable ident
