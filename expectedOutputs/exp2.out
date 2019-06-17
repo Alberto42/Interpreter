@@ -1,1 +1,1 @@
-Right (VInt 0,fromList [(Ident "a",VBoolean True),(Ident "b",VBoolean False),(Ident "c",VBoolean True),(Ident "d",VBoolean False),(Ident "e",VBoolean True),(Ident "f",VBoolean False),(Ident "g",VBoolean True),(Ident "h",VBoolean True),(Ident "i",VBoolean False)])
+Right (OK,fromList [(Ident "a",VBoolean True),(Ident "b",VBoolean False),(Ident "c",VBoolean True),(Ident "d",VBoolean False),(Ident "e",VBoolean True),(Ident "f",VBoolean False),(Ident "g",VBoolean True),(Ident "h",VBoolean True),(Ident "i",VBoolean False)])

@@ -1,1 +1,1 @@
-Right (VInt 0,fromList [(Ident "a",VInt 8)])
+Right (OK,fromList [(Ident "a",VInt 8)])

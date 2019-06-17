@@ -19,7 +19,11 @@ transProgram x = case x of
 transStmts :: Stmts -> InterpreterMonad StatementValue
 transStmts x = case x of
   StmtsNull -> return $ OK
-  SStmts stmt stmts -> transStmt stmt >> transStmts stmts
+  SStmts stmt stmts -> do
+    status <- transStmt stmt
+    case status of
+      OK ->transStmts stmts
+      otherwise -> return status
 transStmt :: Stmt -> InterpreterMonad StatementValue
 transStmt x = case x of
   Assign ident exp -> do
@@ -56,10 +60,17 @@ transStmt x = case x of
   While exp bracedstmts -> do
     val <- transExp exp
     case val of
-      VBoolean b -> if b then (transBracedStmts bracedstmts) >> (transStmt $ While exp bracedstmts ) else return Null
+      VBoolean b ->
+        if b then do
+          status <- transBracedStmts bracedstmts
+          case status of
+            OK -> transStmt $ While exp bracedstmts
+            VBreak -> return OK
+            VContinue -> transStmt $ While exp bracedstmts
+        else return OK
       otherwise -> returnError "wrong condition in while loop"
-  Break -> returnError "not yet implemented 5"
-  Continue -> returnError "not yet implemented 6"
+  Break -> return VBreak
+  Continue -> return VContinue
   FuncCall ident exp -> returnError "not yet implemented 7"
   FuncDecl ident1 ident2 bracedstmts -> returnError "not yet implemented 8"
   Return exp -> returnError "not yet implemented 9"
@@ -163,10 +174,10 @@ getVariable var = InterpreterMonad $ \s ->
   Right (maybeVal, s)
 
 setVariable :: Ident -> Value -> InterpreterMonad StatementValue
-setVariable ident val = InterpreterMonad $ \s -> Right (undefined, Map.insert ident val s)
+setVariable ident val = InterpreterMonad $ \s -> Right (OK, Map.insert ident val s)
 
 removeVariable :: Ident -> InterpreterMonad StatementValue
-removeVariable ident = InterpreterMonad $ \s -> Right (undefined, Map.delete ident s)
+removeVariable ident = InterpreterMonad $ \s -> Right (OK, Map.delete ident s)
 
 --booleanCompOp :: Exp -> Exp -> String -> (forall a. Integral a => a -> a -> Bool) -> InterpreterMonad Value
 booleanCompOp expr1 expr2 opMsg opInt opStr = evalInfixOp expr1 expr2

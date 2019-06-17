@@ -13,7 +13,7 @@ import SkelGrammar
 import InterpreterMonad (State)
 import qualified Data.Map             as Map
 
-handleOutput :: InterpreterMonad Value-> IO ()
+handleOutput :: InterpreterMonad StatementValue-> IO ()
 handleOutput (InterpreterMonad f) = putStrLn $ show $ f Map.empty
 
 parseAndExecute :: String -> IO ()
@@ -34,3 +34,8 @@ main = do
         contents <- hGetContents handle
         parseAndExecute contents
       _ -> putStrLn "Usage: ./interpreter program_to_run"
+
+--g = (\a -> a*10) undefined
+--
+--main :: IO ()
+--main = putStrLn $ show g
