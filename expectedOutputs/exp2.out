@@ -1,4 +1,3 @@
-Right (OK,
 Ident "i" = VBoolean False
 Ident "h" = VBoolean True
 Ident "g" = VBoolean True
@@ -8,4 +7,5 @@ Ident "d" = VBoolean False
 Ident "c" = VBoolean True
 Ident "b" = VBoolean False
 Ident "a" = VBoolean True
-)
+
+

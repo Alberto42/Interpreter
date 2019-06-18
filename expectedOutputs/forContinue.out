@@ -1,5 +1,5 @@
-Right (OK,
 Ident "y" = VInt 9
 Ident "x" = VInt 0
 Ident "i" = VInt 3
-)
+
+

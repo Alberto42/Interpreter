@@ -1,4 +1,4 @@
-Right (OK,
 Ident "x" = VInt 10
 Ident "i" = VInt 2
-)
+
+

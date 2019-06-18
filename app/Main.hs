@@ -13,7 +13,10 @@ import InterpreterMonad (State)
 import qualified Data.Map             as Map
 
 handleOutput :: InterpreterMonad StatementValue-> IO ()
-handleOutput (InterpreterMonad f) = putStrLn $ show $ f startState
+handleOutput (InterpreterMonad f) =
+  case f startState of
+    Right (_,state, log) -> putStrLn $ (show state) ++ "\n" ++ log
+    Left msg -> putStrLn $ msg
 
 parseAndExecute :: String -> IO ()
 parseAndExecute s =

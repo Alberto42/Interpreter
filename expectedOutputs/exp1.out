@@ -1,7 +1,7 @@
-Right (OK,
 Ident "z" = VInt 2
 Ident "y" = VInt 4
 Ident "x" = VInt 3
 Ident "v" = VInt 1
 Ident "a" = VInt 9
-)
+
+

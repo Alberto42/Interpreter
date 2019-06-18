@@ -35,7 +35,7 @@ instance Monad InterpreterMonad where
       Right (x',s'', log') -> Right (x', s'', log ++ log')
 
 instance Show State where
-  show x = Map.foldWithKey (\key val acc ->  acc ++ (show key) ++ " = " ++ (show $ Seq.index (store x) val) ++ "\n") "\n" (env x)
+  show x = Map.foldWithKey (\key val acc ->  acc ++ (show key) ++ " = " ++ (show $ Seq.index (store x) val) ++ "\n") "" (env x)
 
 createMonad :: (State -> State) -> (InterpreterMonad StatementValue)
 createMonad f = InterpreterMonad $  \s -> Right (OK,f s, "")
