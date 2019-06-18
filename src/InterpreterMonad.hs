@@ -8,13 +8,7 @@ data Value = VInt Integer | Null | VString String | VBoolean Bool deriving (Show
 data StatementValue = OK | VBreak | VContinue deriving (Show)
 type Store = Seq.Seq Value
 type Env = Map.Map Ident Int
-data DeclValue = DeclValue
-  {
-    monad :: InterpreterMonad StatementValue,
-    myEnv :: Env,
-    myDecl :: Decl,
-    argument :: Ident
-  }
+type DeclValue = Value -> InterpreterMonad StatementValue
 type Decl = Map.Map Ident DeclValue
 data State = State
   {
@@ -42,4 +36,7 @@ instance Monad InterpreterMonad where
 
 instance Show State where
   show x = Map.foldWithKey (\key val acc ->  acc ++ (show key) ++ " = " ++ (show $ Seq.index (store x) val) ++ "\n") "\n" (env x)
+
+createMonad :: (State -> State) -> (InterpreterMonad StatementValue)
+createMonad f = InterpreterMonad $  \s -> Right (OK,f s)
 

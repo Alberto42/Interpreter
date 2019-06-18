@@ -80,17 +80,20 @@ transStmt x = case x of
   Continue -> return VContinue
   FuncCall ident exp -> returnError "not yet implemented 7"
   FuncDecl ident1 ident2 bracedstmts ->
-    InterpreterMonad $ \s ->
-      let monad = transBracedStmts bracedstmts
-          myEnv = env s -- srodowisko dla nowej funkcji
-          myDecl = decl s -- deklaracje dla nowej funkcji bez niej
-          myDecl' = Map.insert ident1 (DeclValue monad myEnv myDecl' argument) myDecl
-          argument = ident2 -- nazwa argumentu dla nowej funkcji
-          declValue = DeclValue monad myEnv myDecl' argument -- DeclValue dla nowej funkcji
-          decl' = Map.insert ident1 declValue (decl s) -- deklaracje dla programu z nowa funkcja
+    createMonad $ \s -> case s of
+      State envDecl storeDecl declDecl -> s
+--        let declValue = \arg ->
+--              createMonad \s ->
+--                  case s of
+--                  (envCall,storeCall,declCall) ->
+--                    let functionBodyMonad = do
+--                      createNewVariable ident2 arg
+--                      transBracedStmts bracedStmts
+--                    (_,State (_,newStore,_) = functionBodyMonad (State envDecl, storeCall, declDecl)
+--                    in (envCall,newStore,declCall)
+--          newDecl = Map.insert ident1 declValue declDecl
+--        in State envDecl storeDecl newDecl
 
-      in
-      Right (OK, State (env s) (store s) decl')
   Return exp -> returnError "not yet implemented 9"
   Print parident -> returnError "not yet implemented 10"
   AssignListElem ident exp1 exp2 -> returnError "not yet implemented 11"
@@ -203,6 +206,12 @@ setVariable ident val = InterpreterMonad $ \s ->
       let store' = (store s) Seq.|> val in
       let env' = Map.insert ident (length store' - 1) (env s)
       in Right(OK, State env' store' (decl s))
+
+createNewVariable :: Ident -> Value -> InterpreterMonad StatementValue
+createNewVariable ident val = InterpreterMonad $ \s ->
+  let store' = (store s) Seq.|> val in
+  let env' = Map.insert ident (length store' - 1) (env s)
+  in Right(OK, State env' store' (decl s))
 
 removeVariable :: Ident -> InterpreterMonad StatementValue
 removeVariable ident = InterpreterMonad $ \s -> Right (OK, State (Map.delete ident (env s)) (store s) (decl s) )
