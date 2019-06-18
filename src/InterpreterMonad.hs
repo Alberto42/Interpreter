@@ -5,10 +5,10 @@ import qualified Data.Map             as Map
 import qualified Data.Sequence as Seq
 
 data Value = VInt Integer | Null | VString String | VBoolean Bool deriving (Show)
-data StatementValue = OK | VBreak | VContinue deriving (Show)
+data StatementValue = OK | VBreak | VContinue | VReturn Value deriving (Show)
 type Store = Seq.Seq Value
 type Env = Map.Map Ident Int
-type DeclValue = Value -> InterpreterMonad StatementValue
+type DeclValue = Value -> InterpreterMonad Value
 type Decl = Map.Map Ident DeclValue
 data State = State
   {

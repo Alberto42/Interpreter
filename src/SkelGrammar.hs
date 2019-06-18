@@ -86,14 +86,8 @@ transStmt x =
     Break -> return VBreak
     Continue -> return VContinue
     FuncCall ident exp -> do
-      val <- transExp exp
-      monad $ \s@(State env store decl) ->
-        let maybeFunction = Map.lookup ident decl in
-        case maybeFunction of
-          Just f ->
-            let InterpreterMonad g = f val in
-            g s
-          Nothing -> Left "Function doesn't exist"
+      transExp $ FuncCallExp ident exp
+      return OK
     FuncDecl ident1 ident2 bracedstmts ->
       createMonad $ \(State envDecl storeDecl declDecl) ->
         let declValue arg =
@@ -101,14 +95,20 @@ transStmt x =
                in monad $ \(State envCall storeCall declCall) ->
                     let InterpreterMonad functionBody = do
                           createNewVariable ident2 arg
-                          transBracedStmts bracedstmts
+                          status <- transBracedStmts bracedstmts
+                          case status of
+                            OK -> return Null
+                            VReturn v -> return v
+                            otherwise -> returnError "Break or continue inside function body"
                         output = (functionBody (State envDecl storeCall declDecl'))
                      in case output of
                           Left msg -> Left msg
-                          Right (_, State _ newStore _) -> Right (OK, State envCall newStore declCall)
+                          Right (ret, State _ newStore _) -> Right (ret, State envCall newStore declCall)
             newDecl = Map.insert ident1 declValue declDecl
          in State envDecl storeDecl newDecl
-    Return exp -> returnError "not yet implemented 9"
+    Return exp -> do
+      val <- transExp exp
+      return $ VReturn val
     Print parident -> returnError "not yet implemented 10"
     AssignListElem ident exp1 exp2 -> returnError "not yet implemented 11"
     GetListSize list -> returnError "not yet implemented 12"
@@ -170,7 +170,15 @@ transExp x = case x of
       Just val -> return val
       _ -> returnError "Interpreter tried to get value of non-existent variable"
   GetListElem ident exp -> returnError "not yet implemented 25"
-  FuncCallExp ident exp -> returnError "not yet implemented 42"
+  FuncCallExp ident exp -> do
+    val <- transExp exp
+    monad $ \s@(State env store decl) ->
+      let maybeFunction = Map.lookup ident decl in
+      case maybeFunction of
+        Just f ->
+          let InterpreterMonad g = f val in
+          g s
+        Nothing -> Left "Function doesn't exist"
 transLiterals :: Literals -> InterpreterMonad Value
 transLiterals x = case x of
   SLitNull -> returnError "not yet implemented 26"
@@ -211,15 +219,18 @@ getVariable ident = InterpreterMonad $ \s ->
 
 setVariable :: Ident -> Value -> InterpreterMonad StatementValue
 setVariable ident val = InterpreterMonad $ \s ->
-  let maybePos = Map.lookup ident (env s) in
-  case maybePos of
-    Just pos ->
-      let store' = Seq.update pos val (store s)
-      in Right(OK, State (env s) store' (decl s))
-    Nothing ->
-      let store' = (store s) Seq.|> val in
-      let env' = Map.insert ident (length store' - 1) (env s)
-      in Right(OK, State env' store' (decl s))
+  case val of
+    Null -> Left "Wrong assignment"
+    otherwise ->
+      let maybePos = Map.lookup ident (env s) in
+      case maybePos of
+        Just pos ->
+          let store' = Seq.update pos val (store s)
+          in Right(OK, State (env s) store' (decl s))
+        Nothing ->
+          let store' = (store s) Seq.|> val in
+          let env' = Map.insert ident (length store' - 1) (env s)
+          in Right(OK, State env' store' (decl s))
 
 createNewVariable :: Ident -> Value -> InterpreterMonad StatementValue
 createNewVariable ident val = InterpreterMonad $ \s ->
