@@ -18,7 +18,7 @@ data State = State
   }
 
 startState = State Map.empty Seq.empty Map.empty
-type InterpreterMonadInternal a = State -> Either String (a,State)
+type InterpreterMonadInternal a = State -> Either String (a,State, [Char])
 newtype InterpreterMonad a = InterpreterMonad { runInterpreter :: InterpreterMonadInternal a}
 
 instance Functor InterpreterMonad
@@ -27,21 +27,24 @@ instance Applicative InterpreterMonad
 returnError :: String -> InterpreterMonad a
 returnError msg = InterpreterMonad $ \s -> Left msg
 instance Monad InterpreterMonad where
-  return x = InterpreterMonad $ \s -> Right (x, s)
+  return x = InterpreterMonad $ \s -> Right (x, s, "")
   InterpreterMonad f >>= g = InterpreterMonad $ \s -> case f s of
     Left msg -> Left msg
-    Right (x,s') -> case runInterpreter (g x) s' of
+    Right (x,s', log) -> case runInterpreter (g x) s' of
       Left msg -> Left msg
-      Right (x',s'') -> Right (x', s'')
+      Right (x',s'', log') -> Right (x', s'', log ++ log')
 
 instance Show State where
   show x = Map.foldWithKey (\key val acc ->  acc ++ (show key) ++ " = " ++ (show $ Seq.index (store x) val) ++ "\n") "\n" (env x)
 
 createMonad :: (State -> State) -> (InterpreterMonad StatementValue)
-createMonad f = InterpreterMonad $  \s -> Right (OK,f s)
+createMonad f = InterpreterMonad $  \s -> Right (OK,f s, "")
 
 --monad :: InterpreterMonadInternal
-monad f = InterpreterMonad f
+monad f = InterpreterMonad $ \x ->
+  case f x of
+    Right (a,s) -> Right (a,s,"")
+    Left msg -> Left msg
 
 getState :: InterpreterMonad State
 getState = monad $ \s -> Right (s,s)
