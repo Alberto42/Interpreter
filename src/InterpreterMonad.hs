@@ -42,3 +42,6 @@ createMonad f = InterpreterMonad $  \s -> Right (OK,f s)
 
 --monad :: InterpreterMonadInternal
 monad f = InterpreterMonad f
+
+getState :: InterpreterMonad State
+getState = monad $ \s -> Right (s,s)

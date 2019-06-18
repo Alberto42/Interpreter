@@ -172,13 +172,11 @@ transExp x = case x of
   GetListElem ident exp -> returnError "not yet implemented 25"
   FuncCallExp ident exp -> do
     val <- transExp exp
-    monad $ \s@(State env store decl) ->
-      let maybeFunction = Map.lookup ident decl in
+    (State _ _ decl) <- getState
+    let maybeFunction = Map.lookup ident decl in
       case maybeFunction of
-        Just f ->
-          let InterpreterMonad g = f val in
-          g s
-        Nothing -> Left "Function doesn't exist"
+        Just f -> f val
+        Nothing -> returnError "Function doesn't exist"
 transLiterals :: Literals -> InterpreterMonad Value
 transLiterals x = case x of
   SLitNull -> returnError "not yet implemented 26"
@@ -211,14 +209,14 @@ integerEvalInfixOp expr1 expr2 op = do
     _ -> returnError "Interpreter expected int values for infix operator"
 
 getVariable :: Ident -> InterpreterMonad (Maybe Value)
-getVariable ident = InterpreterMonad $ \s ->
+getVariable ident = monad $ \s ->
   let maybePos = Map.lookup ident (env s)
       maybeVal = (maybePos >>= \pos -> Just $ Seq.index (store s) pos  )
   in
   Right (maybeVal, s)
 
 setVariable :: Ident -> Value -> InterpreterMonad StatementValue
-setVariable ident val = InterpreterMonad $ \s ->
+setVariable ident val = monad $ \s ->
   case val of
     Null -> Left "Wrong assignment"
     otherwise ->
@@ -233,13 +231,13 @@ setVariable ident val = InterpreterMonad $ \s ->
           in Right(OK, State env' store' (decl s))
 
 createNewVariable :: Ident -> Value -> InterpreterMonad StatementValue
-createNewVariable ident val = InterpreterMonad $ \s ->
+createNewVariable ident val = monad $ \s ->
   let store' = (store s) Seq.|> val in
   let env' = Map.insert ident (length store' - 1) (env s)
   in Right(OK, State env' store' (decl s))
 
 removeVariable :: Ident -> InterpreterMonad StatementValue
-removeVariable ident = InterpreterMonad $ \s -> Right (OK, State (Map.delete ident (env s)) (store s) (decl s) )
+removeVariable ident = monad $ \s -> Right (OK, State (Map.delete ident (env s)) (store s) (decl s) )
 
 --booleanCompOp :: Exp -> Exp -> String -> (forall a. Integral a => a -> a -> Bool) -> InterpreterMonad Value
 booleanCompOp expr1 expr2 opMsg opInt opStr = evalInfixOp expr1 expr2
