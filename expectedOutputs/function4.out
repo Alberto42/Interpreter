@@ -1,0 +1,5 @@
+Right (OK,
+Ident "z" = VInt 6
+Ident "y" = VInt 3
+Ident "x" = VInt 1
+)
