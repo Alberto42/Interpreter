@@ -85,7 +85,15 @@ transStmt x =
         otherwise -> returnError "wrong condition in while loop"
     Break -> return VBreak
     Continue -> return VContinue
-    FuncCall ident exp -> returnError "not yet implemented 7"
+    FuncCall ident exp -> do
+      val <- transExp exp
+      monad $ \s@(State env store decl) ->
+        let maybeFunction = Map.lookup ident decl in
+        case maybeFunction of
+          Just f ->
+            let InterpreterMonad g = f val in
+            g s
+          Nothing -> Left "Function doesn't exist"
     FuncDecl ident1 ident2 bracedstmts ->
       createMonad $ \(State envDecl storeDecl declDecl) ->
         let declValue arg =
