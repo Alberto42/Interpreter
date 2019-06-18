@@ -40,3 +40,5 @@ instance Show State where
 createMonad :: (State -> State) -> (InterpreterMonad StatementValue)
 createMonad f = InterpreterMonad $  \s -> Right (OK,f s)
 
+--monad :: InterpreterMonadInternal
+monad f = InterpreterMonad f

@@ -80,19 +80,16 @@ transStmt x = case x of
   Continue -> return VContinue
   FuncCall ident exp -> returnError "not yet implemented 7"
   FuncDecl ident1 ident2 bracedstmts ->
-    createMonad $ \s -> case s of
-      State envDecl storeDecl declDecl -> s
---        let declValue = \arg ->
---              createMonad \s ->
---                  case s of
---                  (envCall,storeCall,declCall) ->
---                    let functionBodyMonad = do
---                      createNewVariable ident2 arg
---                      transBracedStmts bracedStmts
---                    (_,State (_,newStore,_) = functionBodyMonad (State envDecl, storeCall, declDecl)
---                    in (envCall,newStore,declCall)
---          newDecl = Map.insert ident1 declValue declDecl
---        in State envDecl storeDecl newDecl
+    createMonad $ \(State envDecl storeDecl declDecl) ->
+        let declValue = \arg ->
+              monad $ \(State envCall storeCall declCall) ->
+                    let InterpreterMonad functionBody = do
+                          createNewVariable ident2 arg
+                          transBracedStmts bracedstmts
+                        (_,State _ newStore _ ) = (functionBody (State envDecl storeCall declDecl) )
+                    in (envCall,newStore,declCall)
+            newDecl = Map.insert ident1 declValue declDecl
+        in State envDecl storeDecl declDecl--newDecl
 
   Return exp -> returnError "not yet implemented 9"
   Print parident -> returnError "not yet implemented 10"
