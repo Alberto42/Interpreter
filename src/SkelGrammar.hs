@@ -83,13 +83,15 @@ transStmt x = case x of
     createMonad $ \(State envDecl storeDecl declDecl) ->
         let declValue = \arg ->
               monad $ \(State envCall storeCall declCall) ->
-                    let InterpreterMonad functionBody = do
-                          createNewVariable ident2 arg
-                          transBracedStmts bracedstmts
-                        (_,State _ newStore _ ) = (functionBody (State envDecl storeCall declDecl) )
-                    in (envCall,newStore,declCall)
+                let InterpreterMonad functionBody = do
+                      createNewVariable ident2 arg
+                      transBracedStmts bracedstmts
+                    output = (functionBody (State envDecl storeCall declDecl) )
+                in case output of
+                  Left msg -> Left msg
+                  Right (_,State _ newStore _ ) -> Right (OK, State envCall newStore declCall)
             newDecl = Map.insert ident1 declValue declDecl
-        in State envDecl storeDecl declDecl--newDecl
+        in State envDecl storeDecl newDecl
 
   Return exp -> returnError "not yet implemented 9"
   Print parident -> returnError "not yet implemented 10"
