@@ -79,7 +79,18 @@ transStmt x = case x of
   Break -> return VBreak
   Continue -> return VContinue
   FuncCall ident exp -> returnError "not yet implemented 7"
-  FuncDecl ident1 ident2 bracedstmts -> returnError "not yet implemented 8"
+  FuncDecl ident1 ident2 bracedstmts ->
+    InterpreterMonad $ \s ->
+      let monad = transBracedStmts bracedstmts
+          myEnv = env s -- srodowisko dla nowej funkcji
+          myDecl = decl s -- deklaracje dla nowej funkcji bez niej
+          myDecl' = Map.insert ident1 (DeclValue monad myEnv myDecl' argument) myDecl
+          argument = ident2 -- nazwa argumentu dla nowej funkcji
+          declValue = DeclValue monad myEnv myDecl' argument -- DeclValue dla nowej funkcji
+          decl' = Map.insert ident1 declValue (decl s) -- deklaracje dla programu z nowa funkcja
+
+      in
+      Right (OK, State (env s) (store s) decl')
   Return exp -> returnError "not yet implemented 9"
   Print parident -> returnError "not yet implemented 10"
   AssignListElem ident exp1 exp2 -> returnError "not yet implemented 11"

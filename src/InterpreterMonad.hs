@@ -8,7 +8,14 @@ data Value = VInt Integer | Null | VString String | VBoolean Bool deriving (Show
 data StatementValue = OK | VBreak | VContinue deriving (Show)
 type Store = Seq.Seq Value
 type Env = Map.Map Ident Int
-type Decl = Map.Map Ident (InterpreterMonad Value)
+data DeclValue = DeclValue
+  {
+    monad :: InterpreterMonad StatementValue,
+    myEnv :: Env,
+    myDecl :: Decl,
+    argument :: Ident
+  }
+type Decl = Map.Map Ident DeclValue
 data State = State
   {
     env :: Env,
