@@ -88,24 +88,26 @@ transStmt x =
     FuncCall ident exp -> do
       transExp $ FuncCallExp ident exp
       return OK
-    FuncDecl ident1 ident2 bracedstmts ->
-      createMonad $ \(State envDecl storeDecl declDecl) ->
-        let declValue arg =
-              let declDecl' = Map.insert ident1 declValue declDecl
-               in monad $ \(State envCall storeCall declCall) ->
-                    let InterpreterMonad functionBody = do
-                          createNewVariable ident2 arg
-                          status <- transBracedStmts bracedstmts
-                          case status of
-                            OK -> return Null
-                            VReturn v -> return v
-                            otherwise -> returnError "Break or continue inside function body"
-                        output = (functionBody (State envDecl storeCall declDecl'))
-                     in case output of
-                          Left msg -> Left msg
-                          Right (ret, State _ newStore _) -> Right (ret, State envCall newStore declCall)
-            newDecl = Map.insert ident1 declValue declDecl
-         in State envDecl storeDecl newDecl
+    FuncDecl ident1 ident2 bracedstmts -> do
+      State envDecl storeDecl declDecl <- getState
+      let declValue arg =
+            let declDecl' = Map.insert ident1 declValue declDecl
+             in monad $ \(State envCall storeCall declCall) ->
+                  let InterpreterMonad functionBody = do
+                        createNewVariable ident2 arg
+                        status <- transBracedStmts bracedstmts
+                        case status of
+                          OK -> return Null
+                          VReturn v -> return v
+                          otherwise -> returnError "Break or continue inside function body"
+                      output = (functionBody (State envDecl storeCall declDecl'))
+                   in case output of
+                        Left msg -> Left msg
+                        Right (ret, State _ newStore _) -> Right (ret, State envCall newStore declCall)
+          newDecl = Map.insert ident1 declValue declDecl
+        in
+        setDecl newDecl
+      return OK
     Return exp -> do
       val <- transExp exp
       return $ VReturn val

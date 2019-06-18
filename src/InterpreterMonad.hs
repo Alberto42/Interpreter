@@ -45,3 +45,6 @@ monad f = InterpreterMonad f
 
 getState :: InterpreterMonad State
 getState = monad $ \s -> Right (s,s)
+
+setDecl :: Decl -> InterpreterMonad a
+setDecl decl = monad $ \(State env store _) -> Right (undefined, State env store decl)
