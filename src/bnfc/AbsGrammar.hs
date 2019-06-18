@@ -66,6 +66,7 @@ data Exp
     | IntSub Exp Exp
     | IntMult Exp Exp
     | IntDiv Exp Exp
+    | FuncCallExp Ident Exp
     | Pare Exp
     | IntLit Integer
     | BoolLit Boolean

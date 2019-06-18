@@ -1,1 +1,4 @@
-Right (OK,fromList [(Ident "x",VInt 1),(Ident "y",VInt 2)])
+Right (OK,
+Ident "y" = VInt 2
+Ident "x" = VInt 1
+)

@@ -1,7 +1,6 @@
 module Main where
 
 import Lib
-import TestGrammar
 import System.Environment (getArgs)
 import System.IO (openFile, hGetContents)
 import System.IO( IOMode( ReadMode ) )

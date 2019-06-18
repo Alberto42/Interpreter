@@ -153,6 +153,7 @@ instance Print Exp where
     IntSub exp1 exp2 -> prPrec i 3 (concatD [prt 3 exp1, doc (showString "-"), prt 4 exp2])
     IntMult exp1 exp2 -> prPrec i 4 (concatD [prt 4 exp1, doc (showString "*"), prt 5 exp2])
     IntDiv exp1 exp2 -> prPrec i 4 (concatD [prt 4 exp1, doc (showString "/"), prt 5 exp2])
+    FuncCallExp id exp -> prPrec i 5 (concatD [prt 0 id, doc (showString "("), prt 0 exp, doc (showString ")")])
     Pare exp -> prPrec i 5 (concatD [doc (showString "("), prt 0 exp, doc (showString ")")])
     IntLit n -> prPrec i 5 (concatD [prt 0 n])
     BoolLit boolean -> prPrec i 5 (concatD [prt 0 boolean])

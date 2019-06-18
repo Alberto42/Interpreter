@@ -153,6 +153,7 @@ transExp x = case x of
       Just val -> return val
       _ -> returnError "Interpreter tried to get value of non-existent variable"
   GetListElem ident exp -> returnError "not yet implemented 25"
+  FuncCallExp ident exp -> returnError "not yet implemented 42"
 transLiterals :: Literals -> InterpreterMonad Value
 transLiterals x = case x of
   SLitNull -> returnError "not yet implemented 26"
