@@ -2,11 +2,21 @@ module InterpreterMonad where
 
 import AbsGrammar (Ident)
 import qualified Data.Map             as Map
+import qualified Data.Sequence as Seq
 
 data Value = VInt Integer | Null | VString String | VBoolean Bool deriving (Show)
 data StatementValue = OK | VBreak | VContinue deriving (Show)
-type State = Map.Map Ident Value
+type Store = Seq.Seq Value
+type Env = Map.Map Ident Int
+type Decl = Map.Map Ident (InterpreterMonad Value)
+data State = State
+  {
+    env :: Env,
+    store :: Store,
+    decl :: Decl
+  }
 
+startState = State Map.empty Seq.empty Map.empty
 type InterpreterMonadInternal a = State -> Either String (a,State)
 newtype InterpreterMonad a = InterpreterMonad { runInterpreter :: InterpreterMonadInternal a}
 
@@ -23,4 +33,6 @@ instance Monad InterpreterMonad where
       Left msg -> Left msg
       Right (x',s'') -> Right (x', s'')
 
+instance Show State where
+  show x = Map.foldWithKey (\key val acc ->  acc ++ (show key) ++ " = " ++ (show $ Seq.index (store x) val) ++ "\n") "\n" (env x)
 

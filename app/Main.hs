@@ -14,7 +14,7 @@ import InterpreterMonad (State)
 import qualified Data.Map             as Map
 
 handleOutput :: InterpreterMonad StatementValue-> IO ()
-handleOutput (InterpreterMonad f) = putStrLn $ show $ f Map.empty
+handleOutput (InterpreterMonad f) = putStrLn $ show $ f startState
 
 parseAndExecute :: String -> IO ()
 parseAndExecute s =

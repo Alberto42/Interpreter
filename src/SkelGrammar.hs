@@ -7,6 +7,7 @@ import AbsGrammar
 import ErrM
 import InterpreterMonad
 import qualified Data.Map             as Map
+import qualified Data.Sequence as Seq
 import Utils
 
 
@@ -173,15 +174,26 @@ integerEvalInfixOp expr1 expr2 op = do
     _ -> returnError "Interpreter expected int values for infix operator"
 
 getVariable :: Ident -> InterpreterMonad (Maybe Value)
-getVariable var = InterpreterMonad $ \s ->
-  let maybeVal = Map.lookup var s in
+getVariable ident = InterpreterMonad $ \s ->
+  let maybePos = Map.lookup ident (env s)
+      maybeVal = (maybePos >>= \pos -> Just $ Seq.index (store s) pos  )
+  in
   Right (maybeVal, s)
 
 setVariable :: Ident -> Value -> InterpreterMonad StatementValue
-setVariable ident val = InterpreterMonad $ \s -> Right (OK, Map.insert ident val s)
+setVariable ident val = InterpreterMonad $ \s ->
+  let maybePos = Map.lookup ident (env s) in
+  case maybePos of
+    Just pos ->
+      let store' = Seq.update pos val (store s)
+      in Right(OK, State (env s) store' (decl s))
+    Nothing ->
+      let store' = (store s) Seq.|> val in
+      let env' = Map.insert ident (length store' - 1) (env s)
+      in Right(OK, State env' store' (decl s))
 
 removeVariable :: Ident -> InterpreterMonad StatementValue
-removeVariable ident = InterpreterMonad $ \s -> Right (OK, Map.delete ident s)
+removeVariable ident = InterpreterMonad $ \s -> Right (OK, State (Map.delete ident (env s)) (store s) (decl s) )
 
 --booleanCompOp :: Exp -> Exp -> String -> (forall a. Integral a => a -> a -> Bool) -> InterpreterMonad Value
 booleanCompOp expr1 expr2 opMsg opInt opStr = evalInfixOp expr1 expr2
