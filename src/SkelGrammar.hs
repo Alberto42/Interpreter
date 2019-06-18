@@ -26,80 +26,87 @@ transStmts x = case x of
       OK ->transStmts stmts
       otherwise -> return status
 transStmt :: Stmt -> InterpreterMonad StatementValue
-transStmt x = case x of
-  Assign ident exp -> do
-    val <- transExp exp
-    setVariable ident val
-
-  ConstAssign ident exp -> returnError "not yet implemented 2"
-  If exp bracedstmts -> do
-    val <- transExp exp
-    case val of
-      VBoolean b -> if b then transBracedStmts bracedstmts else return OK
-      otherwise -> returnError "wrong condition in if"
-  IfElse exp bracedstmts1 bracedstmts2 -> do
-    val <- transExp exp
-    case val of
-      VBoolean b -> transBracedStmts $ if b then bracedstmts1 else bracedstmts2
-      otherwise -> returnError "wrong condition in if"
-  For ident exp1 exp2 bracedstmts -> do
-    val1 <- transExp exp1
-    val2 <- transExp exp2
-    case (val1, val2) of
-      (VInt i1, VInt i2) -> if i1 <= i2
-        then do
-          maybeOriginalIdent <- getVariable ident
-          setVariable ident val1
-          status <- transBracedStmts bracedstmts
-          let nextLoopStepMonad = transStmt $ For ident (IntLit $ i1+1) (IntLit i2) bracedstmts in
-            case status of
-              OK -> nextLoopStepMonad
-              VBreak -> return OK
-              VContinue -> nextLoopStepMonad
-
-          case maybeOriginalIdent of
-            Just val -> setVariable ident val
-            Nothing -> removeVariable ident
-
-        else return OK
-      otherwise -> returnError "wrong range types in for loop"
-  While exp bracedstmts -> do
-    val <- transExp exp
-    case val of
-      VBoolean b ->
-        if b then do
-          status <- transBracedStmts bracedstmts
-          let nextLoopStepMonad = transStmt $ While exp bracedstmts in
-            case status of
-              OK -> nextLoopStepMonad
-              VBreak -> return OK
-              VContinue -> nextLoopStepMonad
-        else return OK
-      otherwise -> returnError "wrong condition in while loop"
-  Break -> return VBreak
-  Continue -> return VContinue
-  FuncCall ident exp -> returnError "not yet implemented 7"
-  FuncDecl ident1 ident2 bracedstmts ->
-    createMonad $ \(State envDecl storeDecl declDecl) ->
-        let declValue = \arg ->
-              monad $ \(State envCall storeCall declCall) ->
-                let InterpreterMonad functionBody = do
-                      createNewVariable ident2 arg
-                      transBracedStmts bracedstmts
-                    output = (functionBody (State envDecl storeCall declDecl) )
-                in case output of
-                  Left msg -> Left msg
-                  Right (_,State _ newStore _ ) -> Right (OK, State envCall newStore declCall)
+transStmt x =
+  case x of
+    Assign ident exp -> do
+      val <- transExp exp
+      setVariable ident val
+    ConstAssign ident exp -> returnError "not yet implemented 2"
+    If exp bracedstmts -> do
+      val <- transExp exp
+      case val of
+        VBoolean b ->
+          if b
+            then transBracedStmts bracedstmts
+            else return OK
+        otherwise -> returnError "wrong condition in if"
+    IfElse exp bracedstmts1 bracedstmts2 -> do
+      val <- transExp exp
+      case val of
+        VBoolean b ->
+          transBracedStmts $
+          if b
+            then bracedstmts1
+            else bracedstmts2
+        otherwise -> returnError "wrong condition in if"
+    For ident exp1 exp2 bracedstmts -> do
+      val1 <- transExp exp1
+      val2 <- transExp exp2
+      case (val1, val2) of
+        (VInt i1, VInt i2) ->
+          if i1 <= i2
+            then do
+              maybeOriginalIdent <- getVariable ident
+              setVariable ident val1
+              status <- transBracedStmts bracedstmts
+              let nextLoopStepMonad = transStmt $ For ident (IntLit $ i1 + 1) (IntLit i2) bracedstmts
+               in case status of
+                    OK -> nextLoopStepMonad
+                    VBreak -> return OK
+                    VContinue -> nextLoopStepMonad
+              case maybeOriginalIdent of
+                Just val -> setVariable ident val
+                Nothing -> removeVariable ident
+            else return OK
+        otherwise -> returnError "wrong range types in for loop"
+    While exp bracedstmts -> do
+      val <- transExp exp
+      case val of
+        VBoolean b ->
+          if b
+            then do
+              status <- transBracedStmts bracedstmts
+              let nextLoopStepMonad = transStmt $ While exp bracedstmts
+               in case status of
+                    OK -> nextLoopStepMonad
+                    VBreak -> return OK
+                    VContinue -> nextLoopStepMonad
+            else return OK
+        otherwise -> returnError "wrong condition in while loop"
+    Break -> return VBreak
+    Continue -> return VContinue
+    FuncCall ident exp -> returnError "not yet implemented 7"
+    FuncDecl ident1 ident2 bracedstmts ->
+      createMonad $ \(State envDecl storeDecl declDecl) ->
+        let declValue arg =
+              let declDecl' = Map.insert ident1 declValue declDecl
+               in monad $ \(State envCall storeCall declCall) ->
+                    let InterpreterMonad functionBody = do
+                          createNewVariable ident2 arg
+                          transBracedStmts bracedstmts
+                        output = (functionBody (State envDecl storeCall declDecl'))
+                     in case output of
+                          Left msg -> Left msg
+                          Right (_, State _ newStore _) -> Right (OK, State envCall newStore declCall)
             newDecl = Map.insert ident1 declValue declDecl
-        in State envDecl storeDecl newDecl
-
-  Return exp -> returnError "not yet implemented 9"
-  Print parident -> returnError "not yet implemented 10"
-  AssignListElem ident exp1 exp2 -> returnError "not yet implemented 11"
-  GetListSize list -> returnError "not yet implemented 12"
-  AppendListElem ident exp -> returnError "not yet implemented 13"
-  AssignTuple ident tuple -> returnError "not yet implemented 14"
-  SExtract identifiers ident -> returnError "not yet implemented 15"
+         in State envDecl storeDecl newDecl
+    Return exp -> returnError "not yet implemented 9"
+    Print parident -> returnError "not yet implemented 10"
+    AssignListElem ident exp1 exp2 -> returnError "not yet implemented 11"
+    GetListSize list -> returnError "not yet implemented 12"
+    AppendListElem ident exp -> returnError "not yet implemented 13"
+    AssignTuple ident tuple -> returnError "not yet implemented 14"
+    SExtract identifiers ident -> returnError "not yet implemented 15"
 transBracedStmts :: BracedStmts -> InterpreterMonad StatementValue
 transBracedStmts x = case x of
   SBracedStmts stmts -> transStmts stmts
