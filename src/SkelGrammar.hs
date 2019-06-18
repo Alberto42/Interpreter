@@ -92,18 +92,20 @@ transStmt x =
       State envDecl storeDecl declDecl <- getState
       let declValue arg =
             let declDecl' = Map.insert ident1 declValue declDecl
-             in monad $ \(State envCall storeCall declCall) ->
-                  let InterpreterMonad functionBody = do
-                        createNewVariable ident2 arg
-                        status <- transBracedStmts bracedstmts
-                        case status of
-                          OK -> return Null
-                          VReturn v -> return v
-                          otherwise -> returnError "Break or continue inside function body"
-                      output = (functionBody (State envDecl storeCall declDecl'))
-                   in case output of
-                        Left msg -> Left msg
-                        Right (ret, State _ newStore _) -> Right (ret, State envCall newStore declCall)
+              in do
+                State envCall storeCall declCall <- getState
+                setEnv envDecl
+                setDecl declDecl'
+                createNewVariable ident2 arg
+                status <- transBracedStmts bracedstmts
+                State _ newStore _ <- getState
+                setEnv envCall
+                setDecl declCall
+                setStore newStore
+                case status of
+                  OK -> return Null
+                  VReturn v -> return v
+                  otherwise -> returnError "Break or continue inside function body"
           newDecl = Map.insert ident1 declValue declDecl
         in
         setDecl newDecl
