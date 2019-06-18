@@ -57,3 +57,6 @@ setStore store = monad $ \(State env _ decl) -> Right (undefined, State env stor
 
 setEnv :: Env -> InterpreterMonad a
 setEnv env = monad $ \(State _ store decl) -> Right (undefined, State env store decl)
+
+printMonad :: [Char] -> InterpreterMonad StatementValue
+printMonad msg = InterpreterMonad $ \s -> Right (OK, s, msg ++ "\n")

@@ -113,7 +113,12 @@ transStmt x =
     Return exp -> do
       val <- transExp exp
       return $ VReturn val
-    Print parident -> returnError "not yet implemented 10"
+    Print parident -> do
+      val <- transParIdent parident
+      printMonad $ case val of
+        VInt i -> show i
+        VString s -> show s
+        VBoolean b -> show b
     AssignListElem ident exp1 exp2 -> returnError "not yet implemented 11"
     GetListSize list -> returnError "not yet implemented 12"
     AppendListElem ident exp -> returnError "not yet implemented 13"
@@ -124,7 +129,11 @@ transBracedStmts x = case x of
   SBracedStmts stmts -> transStmts stmts
 transParIdent :: ParIdent -> InterpreterMonad Value
 transParIdent x = case x of
-  SParIdent ident -> returnError "not yet implemented 16"
+  SParIdent ident -> do
+    maybeVal <- getVariable ident
+    case maybeVal of
+      Just val -> return val
+      Nothing -> returnError "Variable inside print statement doesn't exist"
 transLiteral :: Literal -> InterpreterMonad Value
 transLiteral x = case x of
   LiteralStr string -> returnError "not yet implemented 17" -- useless ?
