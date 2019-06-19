@@ -124,13 +124,10 @@ transStmt x =
       i <- getInt exp1
       val2 <- transExp exp2
       list <- getList ident
-      if  0 <= i && i < length list
-      then
-        let newList = Seq.update (fromIntegral i) val2 list
+      checkBounds list i
+      let newList = Seq.update (fromIntegral i) val2 list
         in
-          setVariable ident $ VList newList
-      else returnError "out of bounds exception"
-
+        setVariable ident $ VList newList
     AppendListElem ident exp -> do
       val <- transExp exp
       list <- getList ident
@@ -194,9 +191,10 @@ transExp x = case x of
       Just val -> return val
       _ -> returnError "Interpreter tried to get value of non-existent variable"
   GetListElem ident exp -> do
-    val <- getInt exp
+    index <- getInt exp
     list <- getList ident
-    return $ Seq.index list (fromIntegral val)
+    checkBounds list index
+    return $ Seq.index list index
   FuncCallExp ident exp -> do
     val <- transExp exp
     (State _ _ decl) <- getState
@@ -207,21 +205,16 @@ transExp x = case x of
   GetListSize exp -> do
     (VList list) <- transExp exp
     return $ VInt $ toInteger $ length list
-transLiterals :: Literals -> InterpreterMonad Value
+transLiterals :: Literals -> InterpreterMonad (Seq.Seq Value)
 transLiterals x = case x of
-  SLitNull -> return $ VList Seq.empty
+  SLitNull -> return Seq.empty
   SLit literal literals -> do
     valRight <- transLiterals literals
     valSingleLeft <- transLiteral literal
-    case valRight of
-      VList valRightL ->
-        return $ VList $ (Seq.singleton valSingleLeft) Seq.>< valRightL
-      otherwise -> returnError "This shouldn't happened 2"
-
-
+    return $ (Seq.singleton valSingleLeft) Seq.>< valRight
   SLitSingle literal -> do
     val <- transLiteral literal
-    return $ VList $ Seq.singleton val
+    return $ Seq.singleton val
 transIdentifiers :: Identifiers -> InterpreterMonad Value
 transIdentifiers x = case x of
   SIdentNull -> returnError "not yet implemented 29"
@@ -230,7 +223,7 @@ transIdentifiers x = case x of
 transList :: List -> InterpreterMonad Value
 transList x = case x of
   SList literals -> do
-    (VList list) <- transLiterals literals
+    list <- transLiterals literals
     return $ VList list
 transTuple :: Tuple -> InterpreterMonad Value
 transTuple x = case x of
@@ -317,3 +310,9 @@ getInt exp = do
   case val of
     VInt i -> return $ fromIntegral i
     otherwise -> returnError "Expected int"
+
+checkBounds :: (Seq.Seq Value) -> Int -> InterpreterMonad (Value)
+checkBounds list i =
+  if  0 <= i && i < length list
+  then return Null
+  else returnError "Out of bounds exception"
