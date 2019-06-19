@@ -119,7 +119,26 @@ transStmt x =
         VInt i -> show i
         VString s -> show s
         VBoolean b -> show b
-    AssignListElem ident exp1 exp2 -> returnError "not yet implemented 11"
+    AssignListElem ident exp1 exp2 -> do
+      val1 <- transExp exp1
+      val2 <- transExp exp2
+      maybeIdentVar <- getVariable ident
+      case maybeIdentVar of
+        Nothing -> returnError "variable doesn't exist"
+        Just identVar ->
+          case identVar of
+            VList list ->
+              case val1 of
+                VInt i ->
+                  if  0 <= i && i < (toInteger $ length list)
+                  then
+                    let newList = Seq.update (fromIntegral i) val2 list
+                    in
+                      setVariable ident $ VList newList
+                  else returnError "out of bounds exception"
+                otherwise -> returnError "operator [] of lists requires integer"
+            otherwise -> returnError "primitive variable used as list"
+
     GetListSize list -> returnError "not yet implemented 12"
     AppendListElem ident exp -> returnError "not yet implemented 13"
     AssignTuple ident tuple -> returnError "not yet implemented 14"
