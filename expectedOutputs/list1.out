@@ -1,0 +1,9 @@
+Ident "v" = VBoolean False
+Ident "l2" = VList (fromList [VInt 1,VBoolean False,VString "str"])
+Ident "l" = VList (fromList [VInt 1,VInt 2,VInt 3,VInt 4])
+
+3
+4
+str
+[VInt 1,VInt 2,VInt 3,VInt 4]
+

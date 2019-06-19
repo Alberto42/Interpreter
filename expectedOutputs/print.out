@@ -3,6 +3,6 @@ Ident "y" = VString "str"
 Ident "x" = VInt 3
 
 3
-"str"
+str
 False
 

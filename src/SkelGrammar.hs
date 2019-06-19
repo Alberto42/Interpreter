@@ -117,8 +117,9 @@ transStmt x =
       val <- transParExp parident
       printMonad $ case val of
         VInt i -> show i
-        VString s -> show s
+        VString s -> s
         VBoolean b -> show b
+        VList l -> drop 9 $ show l
     AssignListElem ident exp1 exp2 -> do
       val1 <- transExp exp1
       val2 <- transExp exp2
