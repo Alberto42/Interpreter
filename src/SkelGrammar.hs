@@ -114,7 +114,7 @@ transStmt x =
       val <- transExp exp
       return $ VReturn val
     Print parident -> do
-      val <- transParIdent parident
+      val <- transParExp parident
       printMonad $ case val of
         VInt i -> show i
         VString s -> show s
@@ -156,13 +156,9 @@ transStmt x =
 transBracedStmts :: BracedStmts -> InterpreterMonad StatementValue
 transBracedStmts x = case x of
   SBracedStmts stmts -> transStmts stmts
-transParIdent :: ParIdent -> InterpreterMonad Value
-transParIdent x = case x of
-  SParIdent ident -> do
-    maybeVal <- getVariable ident
-    case maybeVal of
-      Just val -> return val
-      Nothing -> returnError "Variable inside print statement doesn't exist"
+transParExp :: ParExp -> InterpreterMonad Value
+transParExp x = case x of
+  SParExp exp -> transExp exp
 transLiteral :: Literal -> InterpreterMonad Value
 transLiteral x = case x of
   LiteralStr string -> return $ VString string
@@ -224,8 +220,8 @@ transExp x = case x of
       case maybeFunction of
         Just f -> f val
         Nothing -> returnError "Function doesn't exist"
-  GetListSize list -> do
-    (VList list) <- transList list
+  GetListSize exp -> do
+    (VList list) <- transExp exp
     return $ VInt $ toInteger $ length list
 transLiterals :: Literals -> InterpreterMonad Value
 transLiterals x = case x of

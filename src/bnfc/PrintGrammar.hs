@@ -109,7 +109,7 @@ instance Print Stmt where
     FuncCall id exp -> prPrec i 0 (concatD [prt 0 id, doc (showString "("), prt 0 exp, doc (showString ")")])
     FuncDecl id1 id2 bracedstmts -> prPrec i 0 (concatD [doc (showString "def"), prt 0 id1, doc (showString "("), prt 0 id2, doc (showString ")"), prt 0 bracedstmts])
     Return exp -> prPrec i 0 (concatD [doc (showString "return"), prt 0 exp])
-    Print parident -> prPrec i 0 (concatD [doc (showString "print"), prt 0 parident])
+    Print parexp -> prPrec i 0 (concatD [doc (showString "print"), prt 0 parexp])
     AssignListElem id exp1 exp2 -> prPrec i 0 (concatD [prt 0 id, doc (showString "["), prt 0 exp1, doc (showString "]"), doc (showString "="), prt 0 exp2])
     AppendListElem id exp -> prPrec i 0 (concatD [prt 0 id, doc (showString ".append("), prt 0 exp, doc (showString ")")])
     AssignTuple id tuple -> prPrec i 0 (concatD [prt 0 id, doc (showString "="), prt 0 tuple])
@@ -119,9 +119,9 @@ instance Print BracedStmts where
   prt i e = case e of
     SBracedStmts stmts -> prPrec i 0 (concatD [doc (showString "{"), prt 0 stmts, doc (showString "}")])
 
-instance Print ParIdent where
+instance Print ParExp where
   prt i e = case e of
-    SParIdent id -> prPrec i 0 (concatD [doc (showString "("), prt 0 id, doc (showString ")")])
+    SParExp exp -> prPrec i 0 (concatD [doc (showString "("), prt 0 exp, doc (showString ")")])
 
 instance Print Literal where
   prt i e = case e of
@@ -159,7 +159,7 @@ instance Print Exp where
     StringLit str -> prPrec i 5 (concatD [prt 0 str])
     SSIdent id -> prPrec i 5 (concatD [prt 0 id])
     GetListElem id exp -> prPrec i 0 (concatD [prt 0 id, doc (showString "["), prt 0 exp, doc (showString "]")])
-    GetListSize list -> prPrec i 0 (concatD [doc (showString "len"), doc (showString "("), prt 0 list, doc (showString ")")])
+    GetListSize exp -> prPrec i 0 (concatD [doc (showString "len"), doc (showString "("), prt 0 exp, doc (showString ")")])
 
 instance Print Literals where
   prt i e = case e of

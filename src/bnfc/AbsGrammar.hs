@@ -26,7 +26,7 @@ data Stmt
     | FuncCall Ident Exp
     | FuncDecl Ident Ident BracedStmts
     | Return Exp
-    | Print ParIdent
+    | Print ParExp
     | AssignListElem Ident Exp Exp
     | AppendListElem Ident Exp
     | AssignTuple Ident Tuple
@@ -36,7 +36,7 @@ data Stmt
 data BracedStmts = SBracedStmts Stmts
   deriving (Eq, Ord, Show, Read)
 
-data ParIdent = SParIdent Ident
+data ParExp = SParExp Exp
   deriving (Eq, Ord, Show, Read)
 
 data Literal
@@ -72,7 +72,7 @@ data Exp
     | StringLit String
     | SSIdent Ident
     | GetListElem Ident Exp
-    | GetListSize List
+    | GetListSize Exp
   deriving (Eq, Ord, Show, Read)
 
 data Literals
