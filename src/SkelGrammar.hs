@@ -139,8 +139,27 @@ transStmt x =
                 otherwise -> returnError "operator [] of lists requires integer"
             otherwise -> returnError "primitive variable used as list"
 
-    GetListSize list -> returnError "not yet implemented 12"
-    AppendListElem ident exp -> returnError "not yet implemented 13"
+--    GetListSize list -> do
+--      maybeList <- getVariable list
+--      case maybeList of
+--        Nothing -> returnError "variable doesn't exist"
+--        Just list ->
+--          case list of
+--            VList l -> return $ length l
+--            otherwise -> returnError "You can only check size of lists"
+
+    AppendListElem ident exp -> do
+      val <- transExp exp
+      maybeIdentVar <- getVariable ident
+      case maybeIdentVar of
+        Nothing -> returnError "variable doesn't exist"
+        Just identVar ->
+          case identVar of
+            VList list ->
+              let newList = list Seq.|> val
+              in
+                setVariable ident $ VList newList
+            otherwise -> returnError "primitive variable used as list"
     AssignTuple ident tuple -> returnError "not yet implemented 14"
     SExtract identifiers ident -> returnError "not yet implemented 15"
 transBracedStmts :: BracedStmts -> InterpreterMonad StatementValue
