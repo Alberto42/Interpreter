@@ -174,9 +174,9 @@ transParIdent x = case x of
       Nothing -> returnError "Variable inside print statement doesn't exist"
 transLiteral :: Literal -> InterpreterMonad Value
 transLiteral x = case x of
-  LiteralStr string -> returnError "not yet implemented 17" -- useless ?
-  LiteralInt integer -> returnError "not yet implemented 18" -- useless ?
-  LiteralBool boolean -> returnError "not yet implemented 19" -- useless ?
+  LiteralStr string -> return $ VString string
+  LiteralInt integer -> return $ VInt integer
+  LiteralBool boolean -> transBoolean boolean
   LiteralTuple tuple -> returnError "not yet implemented 20" -- useless ?
 transBoolean :: Boolean -> InterpreterMonad Value
 transBoolean x = case x of
@@ -230,9 +230,22 @@ transExp x = case x of
         Nothing -> returnError "Function doesn't exist"
 transLiterals :: Literals -> InterpreterMonad Value
 transLiterals x = case x of
-  SLitNull -> returnError "not yet implemented 26"
-  SLit literal literals -> returnError "not yet implemented 27"
-  SLitSingle literal -> returnError "not yet implemented 28"
+  SLitNull -> return $ VList Seq.empty
+  SLit literal literals -> do
+    valRight <- transLiterals literals
+    valSingleLeft <- transLiteral literal
+    case valRight of
+      VList valRightL ->
+        case valSingleLeft of
+          VList valSingleLeftL ->
+            return $ VList $ valSingleLeftL Seq.>< valRightL
+          otherwise -> returnError "This shouldn't happened"
+      otherwise -> returnError "This shouldn't happened"
+
+
+  SLitSingle literal -> do
+    val <- transLiteral literal
+    return $ VList $ Seq.singleton val
 transIdentifiers :: Identifiers -> InterpreterMonad Value
 transIdentifiers x = case x of
   SIdentNull -> returnError "not yet implemented 29"
