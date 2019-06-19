@@ -121,37 +121,22 @@ transStmt x =
         VBoolean b -> show b
         VList l -> drop 9 $ show l
     AssignListElem ident exp1 exp2 -> do
-      val1 <- transExp exp1
+      i <- getInt exp1
       val2 <- transExp exp2
-      maybeIdentVar <- getVariable ident
-      case maybeIdentVar of
-        Nothing -> returnError "variable doesn't exist"
-        Just identVar ->
-          case identVar of
-            VList list ->
-              case val1 of
-                VInt i ->
-                  if  0 <= i && i < (toInteger $ length list)
-                  then
-                    let newList = Seq.update (fromIntegral i) val2 list
-                    in
-                      setVariable ident $ VList newList
-                  else returnError "out of bounds exception"
-                otherwise -> returnError "operator [] of lists requires integer"
-            otherwise -> returnError "primitive variable used as list"
+      list <- getList ident
+      if  0 <= i && i < length list
+      then
+        let newList = Seq.update (fromIntegral i) val2 list
+        in
+          setVariable ident $ VList newList
+      else returnError "out of bounds exception"
 
     AppendListElem ident exp -> do
       val <- transExp exp
-      maybeIdentVar <- getVariable ident
-      case maybeIdentVar of
-        Nothing -> returnError "variable doesn't exist"
-        Just identVar ->
-          case identVar of
-            VList list ->
-              let newList = list Seq.|> val
-              in
-                setVariable ident $ VList newList
-            otherwise -> returnError "primitive variable used as list"
+      list <- getList ident
+      let newList = list Seq.|> val
+        in
+        setVariable ident $ VList newList
     AssignTuple ident tuple -> returnError "not yet implemented 14"
     SExtract identifiers ident -> returnError "not yet implemented 15"
 transBracedStmts :: BracedStmts -> InterpreterMonad StatementValue
