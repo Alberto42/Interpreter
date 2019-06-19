@@ -209,11 +209,9 @@ transExp x = case x of
       Just val -> return val
       _ -> returnError "Interpreter tried to get value of non-existent variable"
   GetListElem ident exp -> do
-    (VInt val) <- transExp exp
-    maybeList <- getVariable ident
-    case maybeList of
-      Just (VList list) -> return $ Seq.index list (fromIntegral val)
-      Nothing -> returnError "List doesn't exist"
+    val <- getInt exp
+    list <- getList ident
+    return $ Seq.index list (fromIntegral val)
   FuncCallExp ident exp -> do
     val <- transExp exp
     (State _ _ decl) <- getState
@@ -316,3 +314,21 @@ booleanOp expr1 expr2 opMsg op = evalInfixOp expr1 expr2
   (\a b -> case (a,b) of
     (VBoolean b1, VBoolean b2) -> return $ VBoolean (op b1 b2)
     otherwise -> returnError $ "Wrong types of " ++ opMsg ++ " operator")
+
+
+getList :: Ident -> InterpreterMonad (Seq.Seq Value)
+getList ident = do
+  maybeList <- getVariable ident
+  case maybeList of
+    Just value ->
+      case value of
+        (VList list) -> return $ list
+        otherwise -> returnError "Expected list"
+    Nothing -> returnError "List doesn't exist"
+
+getInt :: Exp -> InterpreterMonad (Int)
+getInt exp = do
+  val <- transExp exp
+  case val of
+    VInt i -> return $ fromIntegral i
+    otherwise -> returnError "Expected int"
