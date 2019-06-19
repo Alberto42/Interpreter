@@ -111,7 +111,6 @@ instance Print Stmt where
     Return exp -> prPrec i 0 (concatD [doc (showString "return"), prt 0 exp])
     Print parident -> prPrec i 0 (concatD [doc (showString "print"), prt 0 parident])
     AssignListElem id exp1 exp2 -> prPrec i 0 (concatD [prt 0 id, doc (showString "["), prt 0 exp1, doc (showString "]"), doc (showString "="), prt 0 exp2])
-    GetListSize list -> prPrec i 0 (concatD [doc (showString "len"), doc (showString "("), prt 0 list, doc (showString ")")])
     AppendListElem id exp -> prPrec i 0 (concatD [prt 0 id, doc (showString ".append("), prt 0 exp, doc (showString ")")])
     AssignTuple id tuple -> prPrec i 0 (concatD [prt 0 id, doc (showString "="), prt 0 tuple])
     SExtract identifiers id -> prPrec i 0 (concatD [doc (showString "("), prt 0 identifiers, doc (showString ")"), doc (showString "="), prt 0 id])
@@ -160,6 +159,7 @@ instance Print Exp where
     StringLit str -> prPrec i 5 (concatD [prt 0 str])
     SSIdent id -> prPrec i 5 (concatD [prt 0 id])
     GetListElem id exp -> prPrec i 0 (concatD [prt 0 id, doc (showString "["), prt 0 exp, doc (showString "]")])
+    GetListSize list -> prPrec i 0 (concatD [doc (showString "len"), doc (showString "("), prt 0 list, doc (showString ")")])
 
 instance Print Literals where
   prt i e = case e of

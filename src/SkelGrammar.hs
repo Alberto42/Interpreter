@@ -139,15 +139,6 @@ transStmt x =
                 otherwise -> returnError "operator [] of lists requires integer"
             otherwise -> returnError "primitive variable used as list"
 
---    GetListSize list -> do
---      maybeList <- getVariable list
---      case maybeList of
---        Nothing -> returnError "variable doesn't exist"
---        Just list ->
---          case list of
---            VList l -> return $ length l
---            otherwise -> returnError "You can only check size of lists"
-
     AppendListElem ident exp -> do
       val <- transExp exp
       maybeIdentVar <- getVariable ident
@@ -184,7 +175,7 @@ transBoolean x = case x of
   BoolFalse -> return $ VBoolean False
 transExp :: Exp -> InterpreterMonad Value
 transExp x = case x of
-  ExpList list -> returnError "not yet implemented 23"
+  ExpList list -> transList list
   ExpTuple tuple -> returnError "not yet implemented 24"
   BoolOr exp1 exp2 -> booleanOp exp1 exp2 "or" (||)
   BoolAnd exp1 exp2 -> booleanOp exp1 exp2 "and" (&&)
@@ -220,7 +211,12 @@ transExp x = case x of
     case maybeVal of
       Just val -> return val
       _ -> returnError "Interpreter tried to get value of non-existent variable"
-  GetListElem ident exp -> returnError "not yet implemented 25"
+  GetListElem ident exp -> do
+    (VInt val) <- transExp exp
+    maybeList <- getVariable ident
+    case maybeList of
+      Just (VList list) -> return $ Seq.index list (fromIntegral val)
+      Nothing -> returnError "List doesn't exist"
   FuncCallExp ident exp -> do
     val <- transExp exp
     (State _ _ decl) <- getState
@@ -228,6 +224,9 @@ transExp x = case x of
       case maybeFunction of
         Just f -> f val
         Nothing -> returnError "Function doesn't exist"
+  GetListSize list -> do
+    (VList list) <- transList list
+    return $ VInt $ toInteger $ length list
 transLiterals :: Literals -> InterpreterMonad Value
 transLiterals x = case x of
   SLitNull -> return $ VList Seq.empty
@@ -236,11 +235,8 @@ transLiterals x = case x of
     valSingleLeft <- transLiteral literal
     case valRight of
       VList valRightL ->
-        case valSingleLeft of
-          VList valSingleLeftL ->
-            return $ VList $ valSingleLeftL Seq.>< valRightL
-          otherwise -> returnError "This shouldn't happened"
-      otherwise -> returnError "This shouldn't happened"
+        return $ VList $ (Seq.singleton valSingleLeft) Seq.>< valRightL
+      otherwise -> returnError "This shouldn't happened 2"
 
 
   SLitSingle literal -> do
@@ -253,7 +249,9 @@ transIdentifiers x = case x of
   SIdentSingle ident -> returnError "not yet implemented 31"
 transList :: List -> InterpreterMonad Value
 transList x = case x of
-  SList literals -> returnError "not yet implemented 32"
+  SList literals -> do
+    (VList list) <- transLiterals literals
+    return $ VList list
 transTuple :: Tuple -> InterpreterMonad Value
 transTuple x = case x of
   STuple literals -> returnError "not yet implemented 33"

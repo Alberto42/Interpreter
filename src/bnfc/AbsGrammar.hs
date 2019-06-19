@@ -28,7 +28,6 @@ data Stmt
     | Return Exp
     | Print ParIdent
     | AssignListElem Ident Exp Exp
-    | GetListSize List
     | AppendListElem Ident Exp
     | AssignTuple Ident Tuple
     | SExtract Identifiers Ident
@@ -73,6 +72,7 @@ data Exp
     | StringLit String
     | SSIdent Ident
     | GetListElem Ident Exp
+    | GetListSize List
   deriving (Eq, Ord, Show, Read)
 
 data Literals
