@@ -16,7 +16,13 @@ transIdent x = case x of
   Ident string -> returnError "not yet implemented 1" -- useless ?
 transProgram :: Program -> InterpreterMonad StatementValue
 transProgram x = case x of
-  SProgram stmts -> transStmts stmts
+  SProgram stmts -> do
+    status <- transStmts stmts
+    case status of
+      OK -> return status
+      VBreak -> returnError "break used outside loop"
+      VContinue -> returnError "continue used outside loop"
+      VReturn _ -> returnError "return used outside loop"
 transStmts :: Stmts -> InterpreterMonad StatementValue
 transStmts x = case x of
   StmtsNull -> return $ OK
