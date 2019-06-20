@@ -60,3 +60,9 @@ setEnv env = monad $ \(State _ store decl) -> Right (undefined, State env store 
 
 printMonad :: [Char] -> InterpreterMonad StatementValue
 printMonad msg = InterpreterMonad $ \s -> Right (OK, s, msg ++ "\n")
+
+unwrapConstIfWrapped :: Value -> InterpreterMonad Value
+unwrapConstIfWrapped v = do
+  case v of
+    Const v2 -> return v2
+    otherwise -> return v

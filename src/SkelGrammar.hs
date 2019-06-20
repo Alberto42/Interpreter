@@ -30,11 +30,11 @@ transStmt x =
   case x of
     Assign ident exp -> do
       val <- transExp exp
-      maybeVariable <- getVariable ident
-      case maybeVariable of
+      maybeValue <- getValueWithoutUnwrapping ident
+      case maybeValue of
         Nothing -> setVariable ident val
-        Just variable ->
-          case variable of
+        Just value ->
+          case value of
             Const c -> returnError "const variables are not assignable"
             otherwise -> setVariable ident val
     ConstAssign ident exp -> do
@@ -72,9 +72,11 @@ transStmt x =
         (VInt i1, VInt i2) ->
           if i1 <= i2
             then do
-              maybeOriginalIdent <- getVariable ident
+              maybeOriginalIdent <- getValue ident
               setVariable ident val1
+              transStmt $ ConstAssign ident (IntLit i1)
               status <- transBracedStmts bracedstmts
+              removeVariable ident
               let nextLoopStepMonad = transStmt $ For ident (IntLit $ i1 + 1) (IntLit i2) bracedstmts
                in case status of
                     OK -> nextLoopStepMonad
@@ -217,7 +219,7 @@ transExp x = case x of
   BoolLit boolean -> transBoolean boolean
   StringLit string -> return $ VString string
   SSIdent ident -> do
-    maybeVal <- getVariable ident
+    maybeVal <- getValue ident
     case maybeVal of
       Just val -> return val
       _ -> returnError "Interpreter tried to get value of non-existent variable"
@@ -277,12 +279,25 @@ integerEvalInfixOp expr1 expr2 op = do
     (VInt i, VInt i2) -> return $ VInt (op i i2)
     _ -> returnError "Interpreter expected int values for infix operator"
 
-getVariable :: Ident -> InterpreterMonad (Maybe Value)
-getVariable ident = monad $ \s ->
+getValue :: Ident -> InterpreterMonad (Maybe Value)
+getValue ident = do
+  maybeValue <- getValueWithoutUnwrapping ident
+  case maybeValue of
+    Nothing -> return Nothing
+    Just value -> do
+      val <- unwrapConstIfWrapped value
+      return $ Just val
+
+getValueWithoutUnwrapping :: Ident -> InterpreterMonad (Maybe Value)
+getValueWithoutUnwrapping ident = do
+  s <- getState
   let maybePos = Map.lookup ident (env s)
-      maybeVal = (maybePos >>= \pos -> Just $ Seq.index (store s) pos  )
-  in
-  Right (maybeVal, s)
+    in
+    case maybePos of
+      Nothing -> return Nothing
+      Just pos ->
+        let val = Seq.index (store s) pos
+          in return $ Just val
 
 setVariable :: Ident -> Value -> InterpreterMonad StatementValue
 setVariable ident val = monad $ \s ->
@@ -330,7 +345,7 @@ booleanOp expr1 expr2 opMsg op = evalInfixOp expr1 expr2
 
 getList :: Ident -> InterpreterMonad (Seq.Seq Value)
 getList ident = do
-  maybeList <- getVariable ident
+  maybeList <- getValue ident
   case maybeList of
     Just value ->
       case value of
@@ -340,7 +355,7 @@ getList ident = do
 
 getTuple :: Ident -> InterpreterMonad (Seq.Seq Value)
 getTuple ident = do
-  maybeList <- getVariable ident
+  maybeList <- getValue ident
   case maybeList of
     Just value ->
       case value of
