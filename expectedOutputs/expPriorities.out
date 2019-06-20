@@ -1,0 +1,10 @@
+Ident "a" = VList (fromList [VInt 1])
+
+2
+8
+6
+6
+True
+True
+True
+

@@ -158,8 +158,8 @@ instance Print Exp where
     BoolLit boolean -> prPrec i 5 (concatD [prt 0 boolean])
     StringLit str -> prPrec i 5 (concatD [prt 0 str])
     SSIdent id -> prPrec i 5 (concatD [prt 0 id])
-    GetListElem id exp -> prPrec i 0 (concatD [prt 0 id, doc (showString "["), prt 0 exp, doc (showString "]")])
-    GetListSize exp -> prPrec i 0 (concatD [doc (showString "len"), doc (showString "("), prt 0 exp, doc (showString ")")])
+    GetListElem id exp -> prPrec i 5 (concatD [prt 0 id, doc (showString "["), prt 0 exp, doc (showString "]")])
+    GetListSize exp -> prPrec i 5 (concatD [doc (showString "len"), doc (showString "("), prt 0 exp, doc (showString ")")])
 
 instance Print Literals where
   prt i e = case e of
