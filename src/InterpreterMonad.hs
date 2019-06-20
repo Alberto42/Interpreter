@@ -4,7 +4,7 @@ import AbsGrammar (Ident)
 import qualified Data.Map             as Map
 import qualified Data.Sequence as Seq
 
-data Value = VInt Integer | Null | VString String | VBoolean Bool | VList (Seq.Seq Value) deriving (Show)
+data Value = VInt Integer | Null | VString String | VBoolean Bool | VList (Seq.Seq Value) | Const Value deriving (Show)
 data StatementValue = OK | VBreak | VContinue | VReturn Value deriving (Show)
 type Store = Seq.Seq Value
 type Env = Map.Map Ident Int

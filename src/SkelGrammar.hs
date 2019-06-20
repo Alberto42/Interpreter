@@ -30,8 +30,24 @@ transStmt x =
   case x of
     Assign ident exp -> do
       val <- transExp exp
-      setVariable ident val
-    ConstAssign ident exp -> returnError "not yet implemented 2"
+      maybeVariable <- getVariable ident
+      case maybeVariable of
+        Nothing -> setVariable ident val
+        Just variable ->
+          case variable of
+            Const c -> returnError "const variables are not assignable"
+            otherwise -> setVariable ident val
+    ConstAssign ident exp -> do
+      transStmt $ Assign ident exp
+      State env store decl <- getState
+      let
+        Just pos = Map.lookup ident env
+        newValue = (Const $ Seq.index store pos)
+        newStore = Seq.update pos newValue store
+        in setStore newStore
+      return OK
+
+
     If exp bracedstmts -> do
       val <- transExp exp
       case val of
