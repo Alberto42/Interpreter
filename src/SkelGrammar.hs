@@ -170,6 +170,7 @@ transStmt x =
         VString s -> s
         VBoolean b -> show b
         VList l -> drop 9 $ show l
+        VTuple t -> (\s -> "(" ++ s ++ ")") $ reverse $ drop 1 $ reverse $ drop 10 $ show t
     AssignListElem ident exp1 exp2 -> do
       i <- getInt exp1
       val2 <- transExp exp2
