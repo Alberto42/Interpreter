@@ -1,3 +1,3 @@
-Ident "result" = VString "prefix sufix"
+Ident "result" = prefix sufix
 
 

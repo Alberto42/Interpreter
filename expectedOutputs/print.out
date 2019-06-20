@@ -1,8 +1,12 @@
-Ident "z" = VBoolean False
-Ident "y" = VString "str"
-Ident "x" = VInt 3
+Ident "z" = False
+Ident "y" = str
+Ident "x" = 3
+Ident "b" = (3,str,False)
+Ident "a" = [3,str,False]
 
 3
 str
 False
+[3,str,False]
+(3,str,False)
 

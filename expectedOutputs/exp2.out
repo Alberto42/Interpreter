@@ -1,11 +1,11 @@
-Ident "i" = VBoolean False
-Ident "h" = VBoolean True
-Ident "g" = VBoolean True
-Ident "f" = VBoolean False
-Ident "e" = VBoolean True
-Ident "d" = VBoolean False
-Ident "c" = VBoolean True
-Ident "b" = VBoolean False
-Ident "a" = VBoolean True
+Ident "i" = False
+Ident "h" = True
+Ident "g" = True
+Ident "f" = False
+Ident "e" = True
+Ident "d" = False
+Ident "c" = True
+Ident "b" = False
+Ident "a" = True
 
 

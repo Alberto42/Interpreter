@@ -1,8 +1,8 @@
-Ident "z" = VString "str"
-Ident "y" = VInt 7
-Ident "x" = VInt 5
-Ident "c" = VInt 3
-Ident "b" = VList (fromList [VInt 2])
-Ident "a" = VBoolean False
+Ident "z" = str
+Ident "y" = 7
+Ident "x" = 5
+Ident "c" = 3
+Ident "b" = [2]
+Ident "a" = False
 
 

@@ -1,4 +1,4 @@
-Ident "a" = VList (fromList [VInt 1])
+Ident "a" = [1]
 
 2
 8

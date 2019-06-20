@@ -4,7 +4,7 @@ import AbsGrammar (Ident)
 import qualified Data.Map             as Map
 import qualified Data.Sequence as Seq
 
-data Value = VInt Integer | Null | VString String | VBoolean Bool | VList (Seq.Seq Value) | Const Value | VTuple (Seq.Seq Value) deriving (Show)
+data Value = VInt Integer | Null | VString String | VBoolean Bool | VList (Seq.Seq Value) | Const Value | VTuple (Seq.Seq Value)
 data StatementValue = OK | VBreak | VContinue | VReturn Value deriving (Show)
 type Store = Seq.Seq Value
 type Env = Map.Map Ident Int
@@ -36,6 +36,19 @@ instance Monad InterpreterMonad where
 
 instance Show State where
   show x = Map.foldWithKey (\key val acc ->  acc ++ (show key) ++ " = " ++ (show $ Seq.index (store x) val) ++ "\n") "" (env x)
+
+instance Show Value where
+  show val =
+    let tmp = reverse . drop 1 . reverse . foldl (\acc next -> acc  ++ (show next) ++ ",") ""
+      in
+      case val of
+        VInt i -> show i
+        VString s -> s
+        VBoolean b -> show b
+        VList l -> "[" ++ (tmp l) ++ "]"
+        VTuple t -> "(" ++ (tmp t) ++ ")"
+        Const val -> "Final " ++ show val
+
 
 createMonad :: (State -> State) -> (InterpreterMonad StatementValue)
 createMonad f = InterpreterMonad $  \s -> Right (OK,f s, "")

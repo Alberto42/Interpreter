@@ -1,6 +1,6 @@
-Ident "x" = VTuple (fromList [VInt 1,VInt 2,VInt 3])
-Ident "c" = VInt 3
-Ident "b" = VInt 2
-Ident "a" = VInt 1
+Ident "x" = (1,2,3)
+Ident "c" = 3
+Ident "b" = 2
+Ident "a" = 1
 
 

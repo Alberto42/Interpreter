@@ -1,4 +1,4 @@
-Ident "y" = VInt 2
-Ident "x" = VInt 1
+Ident "y" = 2
+Ident "x" = 1
 
 

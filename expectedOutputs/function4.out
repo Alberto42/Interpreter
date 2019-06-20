@@ -1,5 +1,5 @@
-Ident "z" = VInt 6
-Ident "y" = VInt 3
-Ident "x" = VInt 1
+Ident "z" = 6
+Ident "y" = 3
+Ident "x" = 1
 
 
