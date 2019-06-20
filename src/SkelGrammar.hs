@@ -73,10 +73,12 @@ transStmt x =
           if i1 <= i2
             then do
               maybeOriginalIdent <- getValue ident
+              State oldEnv _ oldDecl <- getState
               setVariable ident val1
               transStmt $ ConstAssign ident (IntLit i1)
               status <- transBracedStmts bracedstmts
-              removeVariable ident
+              setEnv oldEnv
+              setDecl oldDecl
               let nextLoopStepMonad = transStmt $ For ident (IntLit $ i1 + 1) (IntLit i2) bracedstmts
                in case status of
                     OK -> nextLoopStepMonad
