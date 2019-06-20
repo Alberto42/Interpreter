@@ -9,7 +9,7 @@ import InterpreterMonad
 import qualified Data.Map             as Map
 import qualified Data.Sequence as Seq
 import Utils
-
+import Data.Foldable (toList, fold)
 
 transIdent :: Ident -> InterpreterMonad Value
 transIdent x = case x of
@@ -150,8 +150,23 @@ transStmt x =
       let newList = list Seq.|> val
         in
         setVariable ident $ VList newList
-    AssignTuple ident tuple -> returnError "not yet implemented 14"
-    SExtract identifiers ident -> returnError "not yet implemented 15"
+    AssignTuple ident tuple -> do
+      val <- transTuple tuple
+      setVariable ident val
+    SExtract identifiers ident -> do
+      listIdents <- transIdentifiers identifiers
+      tuple <- getTuple ident
+      let leftIds = toList listIdents
+          rightValues = toList tuple
+        in
+        if length leftIds /= length rightValues then
+          returnError "wrong length of tuple"
+        else
+          let
+            zipped = zip leftIds rightValues
+            pairToMonad (leftId, rightVal) = setVariable leftId rightVal
+            monads = map pairToMonad zipped
+            in foldl (\m1 m2 -> m1 >> m2) (return OK) monads
 transBracedStmts :: BracedStmts -> InterpreterMonad StatementValue
 transBracedStmts x = case x of
   SBracedStmts stmts -> transStmts stmts
@@ -171,7 +186,7 @@ transBoolean x = case x of
 transExp :: Exp -> InterpreterMonad Value
 transExp x = case x of
   ExpList list -> transList list
-  ExpTuple tuple -> returnError "not yet implemented 24"
+  ExpTuple tuple -> transTuple tuple
   BoolOr exp1 exp2 -> booleanOp exp1 exp2 "or" (||)
   BoolAnd exp1 exp2 -> booleanOp exp1 exp2 "and" (&&)
   BoolNot exp -> do
@@ -231,11 +246,13 @@ transLiterals x = case x of
   SLitSingle literal -> do
     val <- transLiteral literal
     return $ Seq.singleton val
-transIdentifiers :: Identifiers -> InterpreterMonad Value
+transIdentifiers :: Identifiers -> InterpreterMonad [Ident]
 transIdentifiers x = case x of
-  SIdentNull -> returnError "not yet implemented 29"
-  SIdent ident identifiers -> returnError "not yet implemented 30"
-  SIdentSingle ident -> returnError "not yet implemented 31"
+  SIdentNull -> return []
+  SIdent ident identifiers -> do
+    list <- transIdentifiers identifiers
+    return $ ident:list
+  SIdentSingle ident -> return [ident]
 transList :: List -> InterpreterMonad Value
 transList x = case x of
   SList literals -> do
@@ -243,8 +260,9 @@ transList x = case x of
     return $ VList list
 transTuple :: Tuple -> InterpreterMonad Value
 transTuple x = case x of
-  STuple literals -> returnError "not yet implemented 33"
-
+  STuple literals -> do
+    tuple <- transLiterals literals
+    return $ VTuple tuple
 
 evalInfixOp expr1 expr2 op = do
   r1 <- transExp expr1
@@ -319,6 +337,16 @@ getList ident = do
         (VList list) -> return $ list
         otherwise -> returnError "Expected list"
     Nothing -> returnError "List doesn't exist"
+
+getTuple :: Ident -> InterpreterMonad (Seq.Seq Value)
+getTuple ident = do
+  maybeList <- getVariable ident
+  case maybeList of
+    Just value ->
+      case value of
+        (VTuple list) -> return $ list
+        otherwise -> returnError "Expected tuple"
+    Nothing -> returnError "Tuple doesn't exist"
 
 getInt :: Exp -> InterpreterMonad (Int)
 getInt exp = do

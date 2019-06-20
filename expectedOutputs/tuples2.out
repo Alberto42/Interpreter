@@ -1,0 +1,6 @@
+Ident "x" = VTuple (fromList [VInt 1,VString "str",VBoolean True])
+Ident "c" = VBoolean True
+Ident "b" = VString "str"
+Ident "a" = VInt 1
+
+
