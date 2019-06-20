@@ -50,14 +50,19 @@ transStmt x =
 
     If exp bracedstmts -> do
       val <- transExp exp
+      State oldEnv _ oldDecl <- getState
       case val of
         VBoolean b ->
           if b
             then transBracedStmts bracedstmts
             else return OK
         otherwise -> returnError "wrong condition in if"
+      setEnv oldEnv
+      setDecl oldDecl
+      return OK
     IfElse exp bracedstmts1 bracedstmts2 -> do
       val <- transExp exp
+      State oldEnv _ oldDecl <- getState
       case val of
         VBoolean b ->
           transBracedStmts $
@@ -65,20 +70,22 @@ transStmt x =
             then bracedstmts1
             else bracedstmts2
         otherwise -> returnError "wrong condition in if"
+      setEnv oldEnv
+      setDecl oldDecl
+      return OK
     For ident exp1 exp2 bracedstmts -> do
       val1 <- transExp exp1
       val2 <- transExp exp2
+      State oldEnv _ oldDecl <- getState
       case (val1, val2) of
         (VInt i1, VInt i2) ->
           if i1 <= i2
             then do
               maybeOriginalIdent <- getValue ident
-              State oldEnv _ oldDecl <- getState
+
               setVariable ident val1
               transStmt $ ConstAssign ident (IntLit i1)
               status <- transBracedStmts bracedstmts
-              setEnv oldEnv
-              setDecl oldDecl
               let nextLoopStepMonad = transStmt $ For ident (IntLit $ i1 + 1) (IntLit i2) bracedstmts
                in case status of
                     OK -> nextLoopStepMonad
@@ -89,8 +96,12 @@ transStmt x =
                 Nothing -> removeVariable ident
             else return OK
         otherwise -> returnError "wrong range types in for loop"
+      setEnv oldEnv
+      setDecl oldDecl
+      return OK
     While exp bracedstmts -> do
       val <- transExp exp
+      State oldEnv _ oldDecl <- getState
       case val of
         VBoolean b ->
           if b
@@ -103,6 +114,9 @@ transStmt x =
                     VContinue -> nextLoopStepMonad
             else return OK
         otherwise -> returnError "wrong condition in while loop"
+      setEnv oldEnv
+      setDecl oldDecl
+      return OK
     Break -> return VBreak
     Continue -> return VContinue
     FuncCall ident exp -> do
