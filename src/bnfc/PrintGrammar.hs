@@ -161,11 +161,11 @@ instance Print Exp where
     GetListElem id exp -> prPrec i 5 (concatD [prt 0 id, doc (showString "["), prt 0 exp, doc (showString "]")])
     GetListSize exp -> prPrec i 5 (concatD [doc (showString "len"), doc (showString "("), prt 0 exp, doc (showString ")")])
 
-instance Print Literals where
+instance Print Expressions where
   prt i e = case e of
-    SLitNull -> prPrec i 0 (concatD [])
-    SLit literal literals -> prPrec i 0 (concatD [prt 0 literal, doc (showString ","), prt 0 literals])
-    SLitSingle literal -> prPrec i 0 (concatD [prt 0 literal])
+    SExpNull -> prPrec i 0 (concatD [])
+    SExp exp expressions -> prPrec i 0 (concatD [prt 0 exp, doc (showString ","), prt 0 expressions])
+    SExpSingle exp -> prPrec i 0 (concatD [prt 0 exp])
 
 instance Print Identifiers where
   prt i e = case e of
@@ -175,9 +175,9 @@ instance Print Identifiers where
 
 instance Print List where
   prt i e = case e of
-    SList literals -> prPrec i 0 (concatD [doc (showString "["), prt 0 literals, doc (showString "]")])
+    SList expressions -> prPrec i 0 (concatD [doc (showString "["), prt 0 expressions, doc (showString "]")])
 
 instance Print Tuple where
   prt i e = case e of
-    STuple literals -> prPrec i 0 (concatD [doc (showString "("), prt 0 literals, doc (showString ")")])
+    STuple expressions -> prPrec i 0 (concatD [doc (showString "("), prt 0 expressions, doc (showString ")")])
 

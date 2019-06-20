@@ -75,17 +75,16 @@ data Exp
     | GetListSize Exp
   deriving (Eq, Ord, Show, Read)
 
-data Literals
-    = SLitNull | SLit Literal Literals | SLitSingle Literal
+data Expressions = SExpNull | SExp Exp Expressions | SExpSingle Exp
   deriving (Eq, Ord, Show, Read)
 
 data Identifiers
     = SIdentNull | SIdent Ident Identifiers | SIdentSingle Ident
   deriving (Eq, Ord, Show, Read)
 
-data List = SList Literals
+data List = SList Expressions
   deriving (Eq, Ord, Show, Read)
 
-data Tuple = STuple Literals
+data Tuple = STuple Expressions
   deriving (Eq, Ord, Show, Read)
 

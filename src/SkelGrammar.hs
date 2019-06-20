@@ -270,15 +270,15 @@ transExp x = case x of
   GetListSize exp -> do
     (VList list) <- transExp exp
     return $ VInt $ toInteger $ length list
-transLiterals :: Literals -> InterpreterMonad (Seq.Seq Value)
-transLiterals x = case x of
-  SLitNull -> return Seq.empty
-  SLit literal literals -> do
-    valRight <- transLiterals literals
-    valSingleLeft <- transLiteral literal
+transExpressions :: Expressions -> InterpreterMonad (Seq.Seq Value)
+transExpressions x = case x of
+  SExpNull -> return Seq.empty
+  SExp exp expressions -> do
+    valRight <- transExpressions expressions
+    valSingleLeft <- transExp exp
     return $ (Seq.singleton valSingleLeft) Seq.>< valRight
-  SLitSingle literal -> do
-    val <- transLiteral literal
+  SExpSingle exp -> do
+    val <- transExp exp
     return $ Seq.singleton val
 transIdentifiers :: Identifiers -> InterpreterMonad [Ident]
 transIdentifiers x = case x of
@@ -289,13 +289,13 @@ transIdentifiers x = case x of
   SIdentSingle ident -> return [ident]
 transList :: List -> InterpreterMonad Value
 transList x = case x of
-  SList literals -> do
-    list <- transLiterals literals
+  SList expressions -> do
+    list <- transExpressions expressions
     return $ VList list
 transTuple :: Tuple -> InterpreterMonad Value
 transTuple x = case x of
-  STuple literals -> do
-    tuple <- transLiterals literals
+  STuple expressions -> do
+    tuple <- transExpressions expressions
     return $ VTuple tuple
 
 evalInfixOp expr1 expr2 op = do
