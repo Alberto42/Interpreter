@@ -11,9 +11,6 @@ import qualified Data.Sequence as Seq
 import Utils
 import Data.Foldable (toList, fold)
 
-transIdent :: Ident -> InterpreterMonad Value
-transIdent x = case x of
-  Ident string -> returnError "not yet implemented 1" -- useless ?
 transProgram :: Program -> InterpreterMonad StatementValue
 transProgram x = case x of
   SProgram stmts -> do
@@ -203,12 +200,6 @@ transBracedStmts x = case x of
 transParExp :: ParExp -> InterpreterMonad Value
 transParExp x = case x of
   SParExp exp -> transExp exp
-transLiteral :: Literal -> InterpreterMonad Value
-transLiteral x = case x of
-  LiteralStr string -> return $ VString string
-  LiteralInt integer -> return $ VInt integer
-  LiteralBool boolean -> transBoolean boolean
-  LiteralTuple tuple -> returnError "not yet implemented 20" -- useless ?
 transBoolean :: Boolean -> InterpreterMonad Value
 transBoolean x = case x of
   BoolTrue -> return $ VBoolean True
