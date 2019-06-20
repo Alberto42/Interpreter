@@ -1,3 +1,5 @@
+x = 0
+y = 0
 if True {
     x = 1
 } else {
@@ -5,7 +7,7 @@ if True {
 }
 
 if False {
-y = 1
+    y = 1
 } else {
-y = 2
+    y = 2
 }

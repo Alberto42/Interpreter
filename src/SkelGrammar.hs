@@ -23,8 +23,25 @@ transStmts x = case x of
   SStmts stmt stmts -> do
     status <- transStmt stmt
     case status of
-      OK ->transStmts stmts
+      OK -> transStmts stmts
       otherwise -> return status
+
+forRecursion :: Ident -> Integer -> Integer -> BracedStmts ->InterpreterMonad StatementValue
+forRecursion ident i i2 bracedstmts =
+  if (i > i2)
+    then
+      return OK
+    else
+      do
+        removeVariable ident
+        transStmt $ ConstAssign ident (IntLit i)
+        status <- transBracedStmts bracedstmts
+        let nextLoopStep = forRecursion ident (i + 1) i2 bracedstmts
+          in
+          case status of
+            OK -> nextLoopStep
+            VBreak -> return OK
+            VContinue -> nextLoopStep
 transStmt :: Stmt -> InterpreterMonad StatementValue
 transStmt x =
   case x of
@@ -51,7 +68,7 @@ transStmt x =
     If exp bracedstmts -> do
       val <- transExp exp
       State oldEnv _ oldDecl <- getState
-      case val of
+      status <- case val of
         VBoolean b ->
           if b
             then transBracedStmts bracedstmts
@@ -59,11 +76,11 @@ transStmt x =
         otherwise -> returnError "wrong condition in if"
       setEnv oldEnv
       setDecl oldDecl
-      return OK
+      return status
     IfElse exp bracedstmts1 bracedstmts2 -> do
       val <- transExp exp
       State oldEnv _ oldDecl <- getState
-      case val of
+      status <- case val of
         VBoolean b ->
           transBracedStmts $
           if b
@@ -72,32 +89,25 @@ transStmt x =
         otherwise -> returnError "wrong condition in if"
       setEnv oldEnv
       setDecl oldDecl
-      return OK
+      return status
+
     For ident exp1 exp2 bracedstmts -> do
       val1 <- transExp exp1
       val2 <- transExp exp2
-      State oldEnv _ oldDecl <- getState
       case (val1, val2) of
         (VInt i1, VInt i2) ->
           if i1 <= i2
             then do
               maybeOriginalIdent <- getValue ident
-
-              setVariable ident val1
-              transStmt $ ConstAssign ident (IntLit i1)
-              status <- transBracedStmts bracedstmts
-              let nextLoopStepMonad = transStmt $ For ident (IntLit $ i1 + 1) (IntLit i2) bracedstmts
-               in case status of
-                    OK -> nextLoopStepMonad
-                    VBreak -> return OK
-                    VContinue -> nextLoopStepMonad
+              State oldEnv _ oldDecl <- getState
+              forRecursion ident i1 i2 bracedstmts
+              setEnv oldEnv
+              setDecl oldDecl
               case maybeOriginalIdent of
                 Just val -> setVariable ident val
-                Nothing -> removeVariable ident
+                Nothing -> return OK
             else return OK
         otherwise -> returnError "wrong range types in for loop"
-      setEnv oldEnv
-      setDecl oldDecl
       return OK
     While exp bracedstmts -> do
       val <- transExp exp
