@@ -1,0 +1,4 @@
+Ident "x" = VInt 55
+Ident "i" = VInt 42
+
+
