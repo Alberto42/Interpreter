@@ -1,0 +1,77 @@
+entrypoints Program ;
+
+SProgram.           Program ::= Stmts ;
+StmtsNull.          Stmts ::=  ;
+SStmts.             Stmts ::= Stmt Stmts ;
+
+Assign.	            Stmt ::= Ident "=" Exp ;
+ConstAssign.        Stmt ::= "final" Ident "=" Exp ;
+
+If.                 Stmt ::= "if" Exp BracedStmts;
+IfElse.             Stmt ::= "if" Exp BracedStmts "else" BracedStmts;
+
+For.                Stmt ::= "for" Ident "in" "range" "(" Exp "," Exp ")" BracedStmts;
+While.              Stmt ::= "while" Exp BracedStmts;
+
+Break.              Stmt ::= "break" ;
+Continue.           Stmt ::= "continue" ;
+
+FuncCall.           Stmt ::= Ident "(" Exp ")" ;
+FuncDecl.           Stmt ::= "def" Ident "(" Ident ")" BracedStmts;
+Return.             Stmt ::= "return" Exp ;
+
+Print.              Stmt ::= "print" ParExp;
+
+SBracedStmts.       BracedStmts ::= "{" Stmts "}";
+SParExp.            ParExp ::= "(" Exp ")";
+
+BoolTrue.           Boolean ::= "True" ;
+BoolFalse.          Boolean ::= "False" ;
+
+
+ExpList.            Exp ::= List ;
+ExpTuple.           Exp ::= Tuple ;
+
+BoolOr.             Exp ::= Exp "or" Exp1 ;
+BoolAnd.            Exp1 ::= Exp1 "and" Exp2 ;
+BoolNot.            Exp2 ::= "not" Exp2 ;
+
+BoolIsSmaller.      Exp2 ::= Exp3 "<" Exp3 ;
+BoolSmallerOrEq.    Exp2 ::= Exp3 "<=" Exp3 ;
+BoolGreater.        Exp2 ::= Exp3 ">" Exp3 ;
+BoolGreaterOrEq.    Exp2 ::= Exp3 ">=" Exp3 ;
+BoolEqual.          Exp2 ::= Exp3 "==" Exp3 ;
+BoolNotEqual.       Exp2 ::= Exp3 "!=" Exp3 ;
+
+
+Add.                Exp3 ::= Exp3 "+" Exp4 ;
+IntSub.             Exp3 ::= Exp3 "-" Exp4 ;
+IntMult.            Exp4 ::= Exp4 "*" Exp5 ;
+IntDiv.             Exp4 ::= Exp4 "/" Exp5 ;
+FuncCallExp.        Exp5 ::= Ident "(" Exp ")" ;
+Pare.               Exp5 ::= "(" Exp ")";
+IntLit.             Exp5 ::= Integer;
+BoolLit.            Exp5 ::= Boolean;
+StringLit.          Exp5 ::= String;
+SSIdent.            Exp5 ::= Ident;
+coercions Exp 5 ;
+
+SExpNull.           Expressions ::= ;
+SExp.               Expressions ::= Exp "," Expressions ;
+SExpSingle.         Expressions ::= Exp ;
+
+SIdentNull.         Identifiers ::= ;
+SIdent.             Identifiers ::= Ident "," Identifiers ;
+SIdentSingle.       Identifiers ::= Ident ;
+
+SList.              List ::= "[" Expressions "]" ;
+AssignListElem.     Stmt ::= Ident "[" Exp "]" "=" Exp ;
+GetListElem.        Exp5 ::= Ident "[" Exp "]" ;
+GetListSize.        Exp5 ::= "len" "(" Exp ")" ;
+AppendListElem.     Stmt ::= Ident ".append(" Exp ")" ;
+
+STuple.             Tuple ::= "(" Expressions ")" ;
+AssignTuple.        Stmt ::= Ident "=" Tuple ;
+SExtract.           Stmt ::= "(" Identifiers ")" "=" Ident ;
+
+comment     "#" ;
