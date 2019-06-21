@@ -25,7 +25,7 @@ def runAllInDirectory(inputs):
         print(filename_out)
         in_file = open(os.path.join(inputs, filename_in))
         out_file = open(os.path.join(outputs, filename_out), mode='w')
-        subprocess.call(["./albert-cieslak", inputs + "/" + filename_in], stdout=out_file)
+        subprocess.call(["./interpreter", inputs + "/" + filename_in], stdout=out_file)
 
 
 runAllInDirectory(inputsGood)
