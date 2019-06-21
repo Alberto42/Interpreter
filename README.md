@@ -13,4 +13,6 @@ Zaimplementowałem wszystkie cechy które podałem w deklaracji na 26 pkt.
 Jeśli jest to możliwe to chciałbym zaimplementować więcej cech niż w deklaracji.
 Ponieważ kiedy deklarowałem nie wiedziałem że stracę 25 % punktów za zrobienie w czerwcu.
 
+Interpreter wypisuje najpierw stan wszystkich zmiennych widocznych w kontekscie globalnym, a nastepnie wyjście programu.
+
 
